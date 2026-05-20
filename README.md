@@ -68,7 +68,7 @@ scripts/
 
 docs/
   API_REQUESTS.md        # API 요청 예시
-  GITHUB_STRUCTURE.md    # GitHub 업로드 구조 설명
+  GITHUB_STRUCTURE.md    # 저장소 구조 설명
 
 content_plan.example.json # 동화 생성 요청 목록 예시
 docker-compose.yml        # PostgreSQL 실행용
@@ -139,7 +139,7 @@ DATABASE_URL=postgresql+asyncpg://lion:lion_password@localhost:5432/lion
 
 ### 4. ComfyUI + SDXL
 
-이미지 생성까지 하려면 ComfyUI가 필요합니다. 이 저장소에서는 `tools/ComfyUI`를 로컬 도구로 사용하지만, GitHub에는 올리지 않습니다.
+이미지 생성까지 하려면 ComfyUI가 필요합니다. 이 저장소에서는 `tools/ComfyUI`를 로컬 도구로 사용합니다.
 
 SDXL checkpoint 위치:
 
@@ -191,7 +191,7 @@ python -m ai.story_generator --plan content_plan.example.json
 outputs/generated_lessons.json
 ```
 
-실제 개인 설정 파일을 따로 만들고 싶으면 `content_plan.json`을 사용하면 됩니다. 이 파일은 `.gitignore`에 포함되어 GitHub에 올라가지 않습니다.
+실제 개인 설정 파일을 따로 만들고 싶으면 `content_plan.json`을 사용하면 됩니다. 이 파일은 `.gitignore`에 포함되어 저장소에 올라가지 않습니다.
 
 ```bash
 cp content_plan.example.json content_plan.json
@@ -265,7 +265,7 @@ curl -X POST http://127.0.0.1:8000/api/content/lessons/batch \
 
 더 자세한 요청 예시는 [docs/API_REQUESTS.md](docs/API_REQUESTS.md)를 참고하세요.
 
-## GitHub에 올리지 않는 것
+## 저장소에 포함하지 않는 것
 
 `.gitignore`에서 다음 항목은 제외합니다.
 
@@ -277,36 +277,6 @@ curl -X POST http://127.0.0.1:8000/api/content/lessons/batch \
 - `postgres_data/`, `*.sqlite`, `*.db`: 로컬 DB 데이터
 - `__pycache__/`, `.pytest_cache/`: Python 캐시
 - `.DS_Store`, `.idea/`, `.vscode/`: 개인 OS/IDE 파일
-
-GitHub에는 코드, 예시 설정, 문서만 올리는 것이 안전합니다.
-
-## GitHub 업로드 흐름
-
-아직 이 폴더는 git 저장소가 아닙니다. 원본 저장소와 포크 저장소 주소를 알고 있다면 아래 순서로 연결하면 됩니다.
-
-```bash
-cd /Users/daeun/Desktop/lion
-git init
-git branch -M backend
-git remote add upstream 원본_저장소_URL
-git remote add origin 내_포크_저장소_URL
-git add .
-git status
-git commit -m "Add backend AI story generation pipeline"
-git push -u origin backend
-```
-
-이미 원본 저장소에 `main` 또는 `develop` 브랜치가 있고 그 위에서 백엔드 브랜치를 만들고 싶다면 먼저 원본을 가져옵니다.
-
-```bash
-git fetch upstream
-git checkout -b backend upstream/main
-git add .
-git commit -m "Add backend AI story generation pipeline"
-git push -u origin backend
-```
-
-원본 기본 브랜치가 `develop`이면 `upstream/main` 대신 `upstream/develop`을 사용하면 됩니다.
 
 ## 현재 파이프라인 상태
 
