@@ -1,0 +1,17 @@
+{
+  "book_id": "book1",
+  "start_episode": 1,
+  "level": 1,
+  "age": 7,
+  "protagonist": "a cute yellow lion cub",
+  "min_score": 80,
+  "generate_images": false,
+  "generate_tts": false,
+  "save_to_database": true,
+  "output_path": "outputs/generated_lessons.json",
+  "themes": [
+    "friendship",
+    "courage",
+    "helping others"
+  ]
+}
