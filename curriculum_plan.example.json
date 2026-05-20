@@ -1,0 +1,62 @@
+{
+  "book_id": "lion",
+  "age": 7,
+  "protagonist": "a cute yellow lion cub",
+  "min_score": 80,
+  "generate_images": false,
+  "generate_tts": false,
+  "save_to_database": true,
+  "output_path": "outputs/curriculum_lessons.json",
+  "max_total_attempts_multiplier": 3,
+  "levels": [
+    {
+      "level": 1,
+      "start_episode": 1,
+      "target_lessons": 10,
+      "themes": [
+        "friendship",
+        "sharing a toy",
+        "helping a lost rabbit",
+        "finding a red ball",
+        "being brave at the park",
+        "cleaning up together",
+        "saying sorry",
+        "making a new friend",
+        "waiting for a turn",
+        "cheering up a sad friend",
+        "finding a little lantern",
+        "kind words"
+      ]
+    },
+    {
+      "level": 2,
+      "start_episode": 1,
+      "target_lessons": 7,
+      "themes": [
+        "teamwork in the forest",
+        "asking for directions",
+        "helping a nervous bird",
+        "building a small bridge",
+        "finding the picnic basket",
+        "trying again after a mistake",
+        "sharing courage with a friend",
+        "solving a rainy day problem",
+        "helping at the market"
+      ]
+    },
+    {
+      "level": 3,
+      "start_episode": 1,
+      "target_lessons": 5,
+      "themes": [
+        "comforting a shy friend",
+        "solving a misunderstanding",
+        "leading a gentle rescue mission",
+        "helping a worried queen",
+        "finding confidence on stage",
+        "working together during a storm",
+        "choosing kindness in a contest"
+      ]
+    }
+  ]
+}

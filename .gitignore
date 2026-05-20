@@ -1,0 +1,61 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Environment / secrets
+.env
+.env.*
+!.env.example
+content_plan.json
+
+# Local generated assets
+audio/
+images/
+generated_images/
+outputs/
+tmp/
+*.mp3
+*.wav
+*.m4a
+*.png
+*.jpg
+*.jpeg
+*.webp
+
+# Local tools / large model files
+tools/
+models/
+checkpoints/
+
+# Logs
+*.log
+logs/
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/
+
+# Database / Docker local data
+postgres_data/
+*.sqlite
+*.sqlite3
+*.db
+
+# Build / package artifacts
+build/
+dist/
+*.egg-info/

@@ -1,0 +1,15 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: lion-postgres
+    environment:
+      POSTGRES_DB: lion
+      POSTGRES_USER: lion
+      POSTGRES_PASSWORD: lion_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
