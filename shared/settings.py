@@ -53,7 +53,7 @@ OLLAMA_MODEL        = os.getenv("OLLAMA_MODEL", "llama3.1:8b")
 STORY_MODEL         = os.getenv("STORY_MODEL", OLLAMA_MODEL)
 STORY_JUDGE_MODELS  = [
     m.strip()
-    for m in os.getenv("STORY_JUDGE_MODELS", "qwen2.5:7b,qwen3:8b").split(",")
+    for m in os.getenv("STORY_JUDGE_MODELS", "qwen2.5:7b").split(",")
     if m.strip()
 ]
 

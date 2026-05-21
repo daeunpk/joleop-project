@@ -214,7 +214,8 @@ The JSON must use this exact structure:
   ]
 }}
 
-The pages array must contain exactly {page_count} items.
+The pages array should usually contain {page_count} items.
+Acceptable page count range: {min_pages} to {max_pages} items.
 Each page must contain exactly one story_sentence.
 
 Illustration idea must include:
@@ -231,13 +232,13 @@ Illustration idea must include:
 ==================================================
 
 LEVEL 1:
-5 sentences/pages
+about 5 sentences/pages (acceptable range: 3-7)
 
 LEVEL 2:
-7 sentences/pages
+about 7 sentences/pages (acceptable range: 5-9)
 
 LEVEL 3:
-10 sentences/pages
+about 10 sentences/pages (acceptable range: 8-12)
 
 One sentence per page.
 
@@ -267,12 +268,26 @@ Create one story with these exact inputs:
 - Child age: {age}
 - Level: {level}
 - Required sentence/page count: {page_count}
+- Acceptable sentence/page count range: {min_pages}-{max_pages}
 - Maximum words per story_sentence: {max_words}
 - Main theme: {theme}
 - Protagonist: {protagonist}
 
+Before writing, design the story to pass this strict judge checklist:
+- Emotional safety: no fear-heavy, lonely, dangerous, violent, or overwhelming content.
+- Readability: short concrete sentences, easy read-aloud rhythm, beginner-friendly words.
+- Visual scene clarity: each page must show a visible place, action, object, color, or body movement.
+- Roleplay compatibility: include a child-friendly helping, comforting, encouraging, asking, or choosing moment.
+- Description quiz compatibility: include visible objects/colors/actions/emotions that a child can describe.
+- Character growth: show a clear small change, such as worried -> comforted, shy -> brave, lost -> helped.
+- Repetition effectiveness: repeat one useful phrase exactly twice in natural places.
+- Dialogue naturalness: use at least two short, kind dialogue lines.
+- Story structure: beginning, small problem, helping action, warm resolution.
+- Memorability: include one concrete memorable object, such as a red ball, blue scarf, yellow lantern, tiny bell, or picnic basket.
+
 Hard constraints:
-- The pages array must contain exactly {page_count} pages.
+- The pages array must contain between {min_pages} and {max_pages} pages.
+- Prefer {page_count} pages when possible.
 - Each story_sentence must be {max_words} words or fewer.
 - Each story_sentence must end with a period, question mark, or exclamation mark.
 - Include one repeated phrase exactly twice, such as "I can help."
@@ -315,14 +330,18 @@ Required JSON shape:
 }}
 
 Rules:
-- pages must contain exactly {page_count} items.
+- pages should usually contain {page_count} items.
+- pages must contain between {min_pages} and {max_pages} items.
 - each story_sentence must be {max_words} words or fewer.
 - one story_sentence = one sentence only.
 - include one repeated phrase exactly twice.
 - include at least two short dialogue sentences with balanced quotation marks.
 - use double quotation marks only.
 - do not use apostrophes, single quotation marks, or contractions.
-- show a clear emotional change.
+- show a clear emotional change, such as worried -> comforted or shy -> brave.
+- include a small problem, helping action, and warm resolution.
+- include visible objects, colors, actions, and emotions for image description quizzes.
+- include a natural roleplay moment where a child can help, comfort, encourage, ask, or choose.
 - every sentence must be visual, warm, child-safe, and easy to illustrate.
 - protagonist must stay consistent: {protagonist}
 - level: {level}
@@ -553,12 +572,12 @@ Your task is to evaluate whether a generated story demonstrates award-level lite
 
 Important context:
 - These are lesson-sized micro-stories, not full picture books.
-- Level 1 stories are exactly 5 sentences.
-- Level 2 stories are exactly 7 sentences.
-- Level 3 stories are exactly 10 sentences.
+- Level 1 stories target about 5 sentences and may contain 3-7 sentences.
+- Level 2 stories target about 7 sentences and may contain 5-9 sentences.
+- Level 3 stories target about 10 sentences and may contain 8-12 sentences.
 - Do NOT penalize a story merely because it is short if it is complete for its required level.
 - Judge literary quality relative to the required sentence count and English learner level.
-- A 5-sentence Level 1 story can score 4 or 5 for structure, character growth, and award-like feeling if it has:
+- A short Level 1 story can score 4 or 5 for structure, character growth, and award-like feeling if it has:
   - a visible setting
   - a small child-safe problem
   - kind dialogue
