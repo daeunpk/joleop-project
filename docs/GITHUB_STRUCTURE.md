@@ -11,7 +11,6 @@ ai/
 backend/
 shared/
 docs/
-legacy/
 .env.example
 .gitignore
 README.md
