@@ -13,20 +13,29 @@
 
 ## 핵심 로직
 
-전체 콘텐츠 생성 흐름은 `테마 목록 → 동화 생성 → judge 평가 → 통과분 저장 → 학습 콘텐츠 생성` 구조입니다.
+전체 콘텐츠 생성 흐름은 `레벨별 긴 동화 기획 → 강별 Part 생성 → judge 평가 → 통과분 저장 → 학습 콘텐츠 생성` 구조입니다.
+
+중요한 개념:
+
+- `Level 1`, `Level 2`, `Level 3`은 서로 다른 난이도의 커리큘럼입니다.
+- 각 Level 안의 `1강`, `2강`, `3강`은 서로 다른 동화가 아닙니다.
+- 한 Level 안에서 하나의 긴 동화를 만들고, 각 강은 그 동화를 조금씩 나누어 보여주는 `Part`입니다.
+- `plans/curriculum_plan.example.json`의 `episode_beats`는 각 Part에서 진행할 사건/감정 흐름입니다.
 
 ```txt
-themes
-  -> theme 1
-    -> Llama 3.1로 동화 생성
+Level 1 long story
+  -> Part 1 / 1강
+    -> Llama 3.1로 첫 구간 생성
     -> Qwen judge로 품질 평가
     -> 80점 이상 + 개별 기준 통과 시 KEEP
     -> 이미지 프롬프트 생성
     -> 묘사 퀴즈 생성
     -> 롤플레잉 미션 생성
     -> DB/JSON 저장
-  -> theme 2
-    -> 같은 순서 반복
+  -> Part 2 / 2강
+    -> Part 1 내용을 continuity context로 넘겨 이어서 생성
+  -> Part 3 / 3강
+    -> 앞 구간을 이어받아 같은 동화를 계속 생성
 ```
 
 동화 judge는 20개 기준을 각각 1-5점으로 평가합니다. 총점은 100점이며, 아래 조건을 모두 만족해야 통과합니다. 어린이 대상 콘텐츠이므로 안전성과 학습 적합성 기준은 엄격하게 유지합니다.
@@ -226,6 +235,161 @@ outputs/curriculum_lessons_stories.md
 ```
 
 `*.json` 파일은 API/DB 저장용 전체 데이터이고, `*_stories.md` 파일은 사람이 읽기 쉬운 동화 전문 모음입니다.
+
+## 생성 결과 저장 방식
+
+동화 생성 파이프라인은 통과한 콘텐츠와 탈락 기록을 모두 파일로 남깁니다. 기본 저장 위치는 `outputs/`입니다.
+
+### 파일명으로 구분하는 법
+
+| 파일/경로 | 언제 생김 | 의미 |
+| --- | --- | --- |
+| `outputs/generated_lessons.json` | `plans/content_plan.example.json` 실행 시 | 단일 레벨 테스트/소량 생성 결과 전체 JSON |
+| `outputs/generated_lessons_stories.md` | 위 실행 후 자동 생성 | 단일 레벨 통과 동화 전문만 모은 읽기용 파일 |
+| `outputs/curriculum_lessons.json` | `plans/curriculum_plan.example.json` 실행 시 | Level 1/2/3 전체 커리큘럼 생성 결과 JSON |
+| `outputs/curriculum_lessons_stories.md` | 위 실행 후 자동 생성 | 전체 커리큘럼 통과 동화 전문만 모은 읽기용 파일 |
+| `outputs/test_generated_lessons.json` | `--output outputs/test_generated_lessons.json`처럼 직접 지정했을 때 | 개발 중 테스트 실행 결과 |
+| `images/{book_id}_ep{episode}_p{page}.png` | `generate_images=true`일 때 | 특정 동화의 특정 페이지 이미지 |
+| `audio/{lesson_id}_p{page}.mp3` | `generate_tts=true`일 때 | 특정 동화의 특정 페이지 음성 |
+
+`generated_*`는 보통 짧은 테스트/단일 레벨 생성 결과이고, `curriculum_*`는 전체 커리큘럼 결과입니다.
+
+`*_stories.md`가 붙은 파일이 **동화 전문**입니다. 아이에게 읽힐 문장만 확인하고 싶으면 JSON이 아니라 이 파일을 보면 됩니다.
+
+기존에 생성된 JSON 파일은 `*_stories.md` 기능을 추가하기 전에 만들어졌을 수 있습니다. 그런 경우 같은 명령을 다시 실행하면 Markdown 전문 파일이 함께 생성됩니다.
+
+### Lesson ID 읽는 법
+
+lesson ID는 아래 형식입니다.
+
+```txt
+{book_id}_ep{episode}_lv{level}
+```
+
+예시:
+
+```txt
+lion_ep1_lv1
+```
+
+의미:
+
+- `lion`: book ID
+- `ep1`: 1강
+- `lv1`: Level 1
+
+이미지 파일명은 lesson의 page 번호까지 포함합니다.
+
+```txt
+images/lion_ep1_p3.png
+```
+
+의미:
+
+- `lion`: book ID
+- `ep1`: 1강
+- `p3`: 3페이지 이미지
+
+### 1. 전체 결과 JSON
+
+```txt
+outputs/generated_lessons.json
+outputs/curriculum_lessons.json
+```
+
+JSON 파일에는 API와 DB 저장에 필요한 전체 데이터가 들어갑니다.
+
+포함 내용:
+
+- `accepted_count`: judge를 통과한 lesson 수
+- `rejected_count`: reject된 생성 시도 수
+- `accepted`: 통과한 lesson 목록
+- `rejected`: 탈락한 생성 시도와 탈락 사유
+- 각 lesson의 `pages`
+- 각 page의 `text`, `image_prompt`, `image_path`, `audio_path`
+- 묘사 퀴즈 `description_scenes`
+- 롤플레잉 미션 `roleplay_scenarios`
+- judge 점수와 평가 결과 `evaluation`
+
+`plans/content_plan.example.json`을 실행하면 기본적으로 `outputs/generated_lessons.json`에 저장됩니다.
+
+`plans/curriculum_plan.example.json`을 실행하면 기본적으로 `outputs/curriculum_lessons.json`에 저장됩니다.
+
+### 2. 동화 전문 Markdown
+
+```txt
+outputs/generated_lessons_stories.md
+outputs/curriculum_lessons_stories.md
+```
+
+Markdown 파일은 사람이 바로 읽기 위한 동화 전문입니다. JSON에서 통과한 구간만 뽑아서 Level, Lesson/Part, Episode beat, Score, 문장 순서대로 정리합니다.
+
+예시 구조:
+
+```txt
+## Level 1
+
+### Level 1 - Lesson 1
+- Lesson ID: lion_ep1_lv1
+- Episode beat: friendship
+- Score: 87
+
+1. ...
+2. ...
+3. ...
+```
+
+`--no-story-text` 옵션을 붙이면 Markdown 전문 파일은 만들지 않습니다.
+
+```bash
+python -m scripts.generate_lessons --plan plans/curriculum_plan.example.json --no-story-text
+```
+
+### 3. 이미지 파일
+
+이미지 경로는 항상 lesson 데이터에 먼저 저장됩니다.
+
+```txt
+images/{book_id}_ep{episode}_p{page_number}.png
+```
+
+예시:
+
+```txt
+images/lion_ep1_p1.png
+images/lion_ep1_p2.png
+```
+
+`generate_images=false`이면 실제 PNG 파일은 만들지 않고, `image_path`와 `image_prompt`만 JSON에 저장합니다.
+
+`generate_images=true`이고 `IMAGE_PROVIDER=comfyui`이면 ComfyUI로 실제 이미지를 생성해서 `images/`에 저장합니다.
+
+### 4. 음성 파일
+
+`generate_tts=true`이면 각 페이지 문장마다 TTS 음성을 생성합니다.
+
+```txt
+audio/{lesson_id}_p{page_number}.mp3
+```
+
+예시:
+
+```txt
+audio/lion_ep1_lv1_p1.mp3
+```
+
+생성된 경로는 각 page의 `audio_path`에 저장됩니다.
+
+### 5. PostgreSQL 저장
+
+`.env`에 `DATABASE_URL`이 있고 plan에서 `save_to_database=true`이면, judge를 통과한 lesson만 PostgreSQL에도 저장합니다.
+
+DB 저장 대상:
+
+- lesson 전체 JSON 데이터
+- roleplay scenario 데이터
+
+reject된 결과는 DB에 저장하지 않고 JSON 결과 파일의 `rejected`에만 남깁니다.
 
 ### 방법 2. FastAPI 서버 실행
 

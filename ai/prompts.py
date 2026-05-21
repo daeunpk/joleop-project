@@ -10,6 +10,11 @@ Your stories should be inspired by the literary qualities of:
 - Newbery Medal
 - Charlotte Huck Award
 
+You are writing one continuous serialized children's story.
+Each lesson is NOT a separate story.
+Each lesson is the next small part of the same longer story for the same level.
+Keep the same protagonist, world, emotional arc, and important objects across lessons.
+
 The stories must feel:
 - warm
 - emotionally safe
@@ -267,11 +272,15 @@ Examples:
 Create one story with these exact inputs:
 - Child age: {age}
 - Level: {level}
-- Required sentence/page count: {page_count}
+- Current lesson/episode: {episode}
+- Total lessons/episodes in this level: {total_episodes}
+- Required sentence/page count for this lesson: {page_count}
 - Acceptable sentence/page count range: {min_pages}-{max_pages}
 - Maximum words per story_sentence: {max_words}
-- Main theme: {theme}
+- Current episode beat: {theme}
 - Protagonist: {protagonist}
+- Series continuity context:
+{continuity_context}
 
 Before writing, design the story to pass this strict judge checklist:
 - Emotional safety: no fear-heavy, lonely, dangerous, violent, or overwhelming content.
@@ -284,6 +293,16 @@ Before writing, design the story to pass this strict judge checklist:
 - Dialogue naturalness: use at least two short, kind dialogue lines.
 - Story structure: beginning, small problem, helping action, warm resolution.
 - Memorability: include one concrete memorable object, such as a red ball, blue scarf, yellow lantern, tiny bell, or picnic basket.
+
+Serialized story rules:
+- This lesson must continue from the series continuity context.
+- Do not restart the story as if the characters are meeting for the first time, unless this is episode 1.
+- Do not end the entire adventure too early unless this is the final episode.
+- Each lesson still needs a small local emotional payoff.
+- Keep recurring characters, objects, and locations consistent.
+- If this is episode 1, gently introduce the protagonist and the first small problem.
+- If this is a middle episode, continue the journey and leave a warm reason to keep going.
+- If this is the final episode, give the longer story a comforting resolution.
 
 Hard constraints:
 - The pages array must contain between {min_pages} and {max_pages} pages.
@@ -347,6 +366,12 @@ Rules:
 - level: {level}
 - child age: {age}
 - theme: {theme}
+- current lesson/episode: {episode}
+- total lessons/episodes in this level: {total_episodes}
+- series continuity context:
+{continuity_context}
+- continue the same longer story rather than starting a separate story.
+- keep recurring characters, objects, and locations consistent.
 
 Draft to repair:
 {draft}
