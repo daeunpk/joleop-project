@@ -29,7 +29,7 @@ themes
     -> 같은 순서 반복
 ```
 
-동화 judge는 20개 기준을 각각 1-5점으로 평가합니다. 총점은 100점이며, 아래 조건을 모두 만족해야 통과합니다.
+동화 judge는 20개 기준을 각각 1-5점으로 평가합니다. 총점은 100점이며, 아래 조건을 모두 만족해야 통과합니다. 어린이 대상 콘텐츠이므로 안전성과 학습 적합성 기준은 엄격하게 유지합니다.
 
 - 총점 `80점 이상`
 - 모든 개별 기준 `3점 이상`
@@ -39,6 +39,12 @@ themes
   - visual scene clarity
   - roleplay compatibility
 - emotional safety, readability, visual scene clarity가 `2점 이하`면 자동 탈락
+
+문장 수는 학습 설계상 목표값을 두되, 생성 안정성을 위해 `목표 ±2문장`까지 허용합니다.
+
+- Level 1: 목표 5문장, 허용 3-7문장
+- Level 2: 목표 7문장, 허용 5-9문장
+- Level 3: 목표 10문장, 허용 8-12문장
 
 ## 프로젝트 구조
 
@@ -70,7 +76,9 @@ docs/
   API_REQUESTS.md        # API 요청 예시
   GITHUB_STRUCTURE.md    # 저장소 구조 설명
 
-content_plan.example.json # 동화 생성 요청 목록 예시
+plans/
+  content_plan.example.json    # 단일 레벨 동화 생성 요청 목록 예시
+  curriculum_plan.example.json # 전체 커리큘럼 생성 요청 목록 예시
 docker-compose.yml        # PostgreSQL 실행용
 requirements.txt          # Python 패키지 목록
 ```
@@ -104,11 +112,10 @@ pip install -r requirements.txt
 ollama pull llama3.1:8b
 ```
 
-Judge는 Qwen 모델을 사용하도록 설정되어 있습니다.
+Judge는 기본적으로 `qwen2.5:7b` 하나만 사용합니다. JSON 출력 안정성이 좋아서 현재 파이프라인 judge에 가장 적합합니다.
 
 ```bash
 ollama pull qwen2.5:7b
-ollama pull qwen3:8b
 ```
 
 `.env` 예시:
@@ -118,7 +125,7 @@ LLM_PROVIDER=ollama
 OLLAMA_BASE_URL=http://localhost:11434
 OLLAMA_MODEL=llama3.1:8b
 STORY_MODEL=llama3.1:8b
-STORY_JUDGE_MODELS=qwen2.5:7b,qwen3:8b
+STORY_JUDGE_MODELS=qwen2.5:7b
 ```
 
 ### 3. PostgreSQL
@@ -172,36 +179,37 @@ COMFYUI_CFG=7.0
 
 ### 방법 1. 테마 목록 파일로 동화 생성
 
-긴 `curl` 없이 `content_plan.example.json`을 수정한 뒤 실행합니다.
+긴 `curl` 없이 `plans/content_plan.example.json`을 수정한 뒤 실행합니다.
 
 ```bash
 source .venv/bin/activate
-python -m scripts.generate_lessons --plan content_plan.example.json
+python -m scripts.generate_lessons --plan plans/content_plan.example.json
 ```
 
 또는 `story_generator.py`로 직접 실행할 수 있습니다.
 
 ```bash
-python -m ai.story_generator --plan content_plan.example.json
+python -m ai.story_generator --plan plans/content_plan.example.json
 ```
 
 결과는 기본적으로 아래 파일에 저장됩니다.
 
 ```txt
 outputs/generated_lessons.json
+outputs/generated_lessons_stories.md
 ```
 
-실제 개인 설정 파일을 따로 만들고 싶으면 `content_plan.json`을 사용하면 됩니다. 이 파일은 `.gitignore`에 포함되어 저장소에 올라가지 않습니다.
+실제 개인 설정 파일을 따로 만들고 싶으면 `plans/content_plan.json`을 사용하면 됩니다. 이 파일은 `.gitignore`에 포함되어 저장소에 올라가지 않습니다.
 
 ```bash
-cp content_plan.example.json content_plan.json
-python -m scripts.generate_lessons --plan content_plan.json
+cp plans/content_plan.example.json plans/content_plan.json
+python -m scripts.generate_lessons --plan plans/content_plan.json
 ```
 
-커리큘럼 전체를 한 번에 생성하려면 `curriculum_plan.example.json`을 사용합니다.
+커리큘럼 전체를 한 번에 생성하려면 `plans/curriculum_plan.example.json`을 사용합니다.
 
 ```bash
-python -m scripts.generate_lessons --plan curriculum_plan.example.json
+python -m scripts.generate_lessons --plan plans/curriculum_plan.example.json
 ```
 
 기본 커리큘럼 구성:
@@ -214,7 +222,10 @@ python -m scripts.generate_lessons --plan curriculum_plan.example.json
 
 ```txt
 outputs/curriculum_lessons.json
+outputs/curriculum_lessons_stories.md
 ```
+
+`*.json` 파일은 API/DB 저장용 전체 데이터이고, `*_stories.md` 파일은 사람이 읽기 쉬운 동화 전문 모음입니다.
 
 ### 방법 2. FastAPI 서버 실행
 

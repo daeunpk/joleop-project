@@ -46,18 +46,26 @@ def call_local_story_model(prompt: str) -> str:
 def build_story_prompt(age: int, level: int, theme: str, protagonist: str) -> str:
     cfg = LEVEL_CONFIGS[level]
     max_words = max_words_for_level(level)
+    min_pages, max_pages = page_range_for_level(level)
     return STORY_GENERATION_PROMPT.format(
         age=age,
         level=level,
         theme=theme,
         protagonist=protagonist,
         page_count=cfg.pages,
+        min_pages=min_pages,
+        max_pages=max_pages,
         max_words=max_words,
     )
 
 
 def max_words_for_level(level: int) -> int:
     return {1: 12, 2: 16, 3: 20}[level]
+
+
+def page_range_for_level(level: int) -> tuple[int, int]:
+    target = LEVEL_CONFIGS[level].pages
+    return max(3, target - 2), target + 2
 
 
 def repair_story_output(
@@ -69,6 +77,7 @@ def repair_story_output(
     protagonist: str,
 ) -> str:
     cfg = LEVEL_CONFIGS[level]
+    min_pages, max_pages = page_range_for_level(level)
     prompt = STORY_REPAIR_PROMPT.format(
         draft=draft,
         age=age,
@@ -76,6 +85,8 @@ def repair_story_output(
         theme=theme,
         protagonist=protagonist,
         page_count=cfg.pages,
+        min_pages=min_pages,
+        max_pages=max_pages,
         max_words=max_words_for_level(level),
     )
     try:
@@ -98,14 +109,15 @@ def post_process_check(text: str, level: int) -> tuple[bool, str, list[str]]:
     """
     cfg = LEVEL_CONFIGS[level]
     max_words = max_words_for_level(level)
+    min_pages, max_pages = page_range_for_level(level)
 
     # 문장 추출: 새 구조화 출력의 "Story sentence"를 우선 사용하고,
     # 실패하면 예전 numbered-line 형식도 허용한다.
     lines = extract_story_sentences(text)
 
     # 1. 문장 수 검사
-    if len(lines) != cfg.pages:
-        return False, f"문장 수 불일치: {len(lines)} (필요: {cfg.pages})", lines
+    if not min_pages <= len(lines) <= max_pages:
+        return False, f"문장 수 불일치: {len(lines)} (허용: {min_pages}-{max_pages}, 목표: {cfg.pages})", lines
 
     # 2. 문장 길이 검사
     for i, sent in enumerate(lines):

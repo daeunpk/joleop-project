@@ -20,6 +20,8 @@ env/
 .env.*
 !.env.example
 content_plan.json
+plans/content_plan.json
+plans/curriculum_plan.json
 
 # Local generated assets
 audio/

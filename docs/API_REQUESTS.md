@@ -42,18 +42,18 @@ theme 2 -> Llama 생성 -> Qwen judge -> FAIL이면 rejected
 theme 3 -> 반복
 ```
 
-긴 요청문을 매번 치지 않으려면 `content_plan.example.json`을 수정하고 아래처럼 실행하면 됩니다.
+긴 요청문을 매번 치지 않으려면 `plans/content_plan.example.json`을 수정하고 아래처럼 실행하면 됩니다.
 
 ```bash
 source .venv/bin/activate
-python -m scripts.generate_lessons --plan content_plan.example.json
+python -m scripts.generate_lessons --plan plans/content_plan.example.json
 ```
 
 `ai/story_generator.py` 쪽으로 실행하고 싶으면 아래 명령도 같습니다.
 
 ```bash
 source .venv/bin/activate
-python -m ai.story_generator --plan content_plan.example.json
+python -m ai.story_generator --plan plans/content_plan.example.json
 ```
 
 API로 호출해야 할 때만 아래 `curl`을 사용합니다.
