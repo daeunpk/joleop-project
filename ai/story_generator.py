@@ -43,7 +43,16 @@ def call_local_story_model(prompt: str) -> str:
 
 # ─── 동화 생성 프롬프트 ───────────────────────────────────────
 
-def build_story_prompt(age: int, level: int, theme: str, protagonist: str) -> str:
+def build_story_prompt(
+    age: int,
+    level: int,
+    theme: str,
+    protagonist: str,
+    *,
+    episode: int = 1,
+    total_episodes: int = 1,
+    continuity_context: str = "This is episode 1. Start the longer story gently.",
+) -> str:
     cfg = LEVEL_CONFIGS[level]
     max_words = max_words_for_level(level)
     min_pages, max_pages = page_range_for_level(level)
@@ -52,6 +61,9 @@ def build_story_prompt(age: int, level: int, theme: str, protagonist: str) -> st
         level=level,
         theme=theme,
         protagonist=protagonist,
+        episode=episode,
+        total_episodes=total_episodes,
+        continuity_context=continuity_context,
         page_count=cfg.pages,
         min_pages=min_pages,
         max_pages=max_pages,
@@ -75,6 +87,9 @@ def repair_story_output(
     level: int,
     theme: str,
     protagonist: str,
+    episode: int = 1,
+    total_episodes: int = 1,
+    continuity_context: str = "",
 ) -> str:
     cfg = LEVEL_CONFIGS[level]
     min_pages, max_pages = page_range_for_level(level)
@@ -84,6 +99,9 @@ def repair_story_output(
         level=level,
         theme=theme,
         protagonist=protagonist,
+        episode=episode,
+        total_episodes=total_episodes,
+        continuity_context=continuity_context or "Repair this episode while preserving the same longer story.",
         page_count=cfg.pages,
         min_pages=min_pages,
         max_pages=max_pages,
@@ -596,6 +614,8 @@ async def generate_lesson(
     protagonist: str,
     generate_images: bool = False,
     max_retries: int = 3,
+    total_episodes: int = 1,
+    continuity_context: str = "This is episode 1. Start the longer story gently.",
 ) -> Optional[Lesson]:
     """
     전체 콘텐츠 제작 파이프라인 실행
@@ -603,7 +623,15 @@ async def generate_lesson(
     print(f"\n{'='*50}")
     print(f"[콘텐츠 생성] book={book_id} ep={episode} level={level}")
 
-    prompt = build_story_prompt(age, level, theme, protagonist)
+    prompt = build_story_prompt(
+        age,
+        level,
+        theme,
+        protagonist,
+        episode=episode,
+        total_episodes=total_episodes,
+        continuity_context=continuity_context,
+    )
 
     # ① Llama로 동화 텍스트 생성
     print(f"  ① 동화 텍스트 생성 ({MODELS.story_model})...")
@@ -636,6 +664,9 @@ async def generate_lesson(
             level=level,
             theme=theme,
             protagonist=protagonist,
+            episode=episode,
+            total_episodes=total_episodes,
+            continuity_context=continuity_context,
         )
         if not best_text:
             break
@@ -702,11 +733,21 @@ async def generate_lesson_if_quality_passes(
     generate_images: bool = False,
     max_retries: int = 3,
     quality_retries: int = 3,
+    total_episodes: int = 1,
+    continuity_context: str = "This is episode 1. Start the longer story gently.",
 ) -> tuple[Optional[Lesson], dict]:
     print(f"\n{'='*50}")
     print(f"[품질 필터 생성] theme={theme} ep={episode} min_score={min_score}")
 
-    prompt = build_story_prompt(age, level, theme, protagonist)
+    prompt = build_story_prompt(
+        age,
+        level,
+        theme,
+        protagonist,
+        episode=episode,
+        total_episodes=total_episodes,
+        continuity_context=continuity_context,
+    )
     best_failure = {
         "theme": theme,
         "accepted": False,
@@ -736,6 +777,9 @@ async def generate_lesson_if_quality_passes(
                 level=level,
                 theme=theme,
                 protagonist=protagonist,
+                episode=episode,
+                total_episodes=total_episodes,
+                continuity_context=continuity_context,
             )
             ok, reason, sentences = post_process_check(best_text, level)
             if ok:

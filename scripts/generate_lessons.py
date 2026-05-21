@@ -1,5 +1,8 @@
 """
-Run the sequential story generation pipeline from a saved theme plan.
+Run the sequential story generation pipeline from a saved content plan.
+
+For curriculum plans, each level is one continuous story and each generated
+lesson is the next part of that story.
 
 Usage:
     python -m scripts.generate_lessons --plan plans/content_plan.example.json
@@ -33,7 +36,7 @@ def load_plan(path: Path) -> dict[str, Any]:
             validate_batch(batch)
         return plan
 
-    required = ["book_id", "level", "age", "protagonist", "themes"]
+    required = ["book_id", "level", "age", "protagonist"]
     missing = [key for key in required if key not in plan]
     if missing:
         raise ValueError(f"Missing required plan keys: {', '.join(missing)}")
@@ -44,8 +47,12 @@ def load_plan(path: Path) -> dict[str, Any]:
 def validate_batch(batch: dict[str, Any]) -> None:
     if batch["level"] not in [1, 2, 3]:
         raise ValueError("level must be 1, 2, or 3.")
-    if not batch["themes"]:
-        raise ValueError("themes must include at least one theme.")
+    if not get_episode_beats(batch):
+        raise ValueError("themes or episode_beats must include at least one item.")
+
+
+def get_episode_beats(plan: dict[str, Any]) -> list[str]:
+    return plan.get("episode_beats") or plan.get("themes") or []
 
 
 async def maybe_save_to_database(lesson_data: dict, roleplay_scenarios: list) -> bool:
@@ -68,10 +75,12 @@ async def run_plan(plan: dict[str, Any]) -> dict[str, Any]:
 async def run_single_level_plan(plan: dict[str, Any]) -> dict[str, Any]:
     accepted = []
     rejected = []
+    accepted_sentences: list[str] = []
     next_episode = int(plan.get("start_episode", 1))
 
-    for index, theme in enumerate(plan["themes"], start=1):
-        print(f"\n[{index}/{len(plan['themes'])}] theme={theme}")
+    episode_beats = get_episode_beats(plan)
+    for index, theme in enumerate(episode_beats, start=1):
+        print(f"\n[{index}/{len(episode_beats)}] episode beat={theme}")
         lesson, quality = await generate_lesson_if_quality_passes(
             book_id=plan["book_id"],
             episode=next_episode,
@@ -81,6 +90,12 @@ async def run_single_level_plan(plan: dict[str, Any]) -> dict[str, Any]:
             protagonist=plan["protagonist"],
             min_score=int(plan.get("min_score", 80)),
             generate_images=bool(plan.get("generate_images", False)),
+            total_episodes=len(episode_beats),
+            continuity_context=build_continuity_context(
+                accepted_sentences,
+                next_episode,
+                len(episode_beats),
+            ),
         )
 
         if not lesson:
@@ -102,12 +117,14 @@ async def run_single_level_plan(plan: dict[str, Any]) -> dict[str, Any]:
 
         accepted.append({
             "theme": theme,
+            "episode_role": episode_role(next_episode, len(episode_beats)),
             "score": quality["score"],
             "reason": quality.get("reason", ""),
             "lesson": lesson_data,
             "evaluation": quality.get("evaluation", {}),
             "saved_to_database": saved_to_database,
         })
+        accepted_sentences.extend(page.text for page in lesson.pages)
         print(f"  PASS: {quality['score']}/100 -> {lesson.lesson_id}")
         next_episode += 1
 
@@ -160,16 +177,18 @@ async def run_curriculum_plan(plan: dict[str, Any]) -> dict[str, Any]:
 async def run_target_level_plan(plan: dict[str, Any]) -> dict[str, Any]:
     accepted = []
     rejected = []
-    target_lessons = int(plan.get("target_lessons", len(plan["themes"])))
+    accepted_sentences: list[str] = []
+    episode_beats = get_episode_beats(plan)
+    target_lessons = int(plan.get("target_lessons", len(episode_beats)))
     next_episode = int(plan.get("start_episode", 1))
     max_attempts = max(
-        len(plan["themes"]),
+        len(episode_beats),
         target_lessons * int(plan.get("max_total_attempts_multiplier", 3)),
     )
 
     attempt = 0
     while len(accepted) < target_lessons and attempt < max_attempts:
-        theme = plan["themes"][attempt % len(plan["themes"])]
+        theme = episode_beats[attempt % len(episode_beats)]
         display_index = len(accepted) + 1
         attempt += 1
         print(
@@ -186,6 +205,12 @@ async def run_target_level_plan(plan: dict[str, Any]) -> dict[str, Any]:
             protagonist=plan["protagonist"],
             min_score=int(plan.get("min_score", 80)),
             generate_images=bool(plan.get("generate_images", False)),
+            total_episodes=target_lessons,
+            continuity_context=build_continuity_context(
+                accepted_sentences,
+                next_episode,
+                target_lessons,
+            ),
         )
 
         if not lesson:
@@ -208,12 +233,14 @@ async def run_target_level_plan(plan: dict[str, Any]) -> dict[str, Any]:
         accepted.append({
             "level": plan["level"],
             "theme": theme,
+            "episode_role": episode_role(next_episode, target_lessons),
             "score": quality["score"],
             "reason": quality.get("reason", ""),
             "lesson": lesson_data,
             "evaluation": quality.get("evaluation", {}),
             "saved_to_database": saved_to_database,
         })
+        accepted_sentences.extend(page.text for page in lesson.pages)
         print(f"  PASS: {quality['score']}/100 -> {lesson.lesson_id}")
         next_episode += 1
 
@@ -226,6 +253,38 @@ async def run_target_level_plan(plan: dict[str, Any]) -> dict[str, Any]:
         "accepted": accepted,
         "rejected": rejected,
     }
+
+
+def build_continuity_context(
+    previous_sentences: list[str],
+    episode: int,
+    total_episodes: int,
+) -> str:
+    role = episode_role(episode, total_episodes)
+    if not previous_sentences:
+        return (
+            f"This is episode {episode} of {total_episodes}. "
+            f"It is the {role} of one longer story. "
+            "Introduce the protagonist, the world, and the first small child-safe problem."
+        )
+
+    recent = previous_sentences[-8:]
+    previous_text = "\n".join(f"- {sentence}" for sentence in recent)
+    return (
+        f"This is episode {episode} of {total_episodes}. "
+        f"It is the {role} of the same longer story. "
+        "Continue from these previous accepted story sentences. "
+        "Do not restart the story or change the main character.\n"
+        f"{previous_text}"
+    )
+
+
+def episode_role(episode: int, total_episodes: int) -> str:
+    if episode <= 1:
+        return "beginning"
+    if episode >= total_episodes:
+        return "ending"
+    return "middle"
 
 
 def write_output(result: dict[str, Any], output_path: Path) -> None:
@@ -265,6 +324,8 @@ def write_story_text_output(result: dict[str, Any], output_path: Path) -> None:
         lines.extend([
             f"## Level {level}",
             "",
+            "This level is one continuous story. Each lesson is the next part of that story.",
+            "",
             f"- Lessons: {len(lessons)}",
             f"- Sentences: {level_sentence_count}",
             "",
@@ -277,10 +338,10 @@ def write_story_text_output(result: dict[str, Any], output_path: Path) -> None:
             score = item.get("score", lesson.get("quality_score", ""))
             lesson_id = lesson.get("lesson_id", "")
             lines.extend([
-                f"### Level {level} - Lesson {episode}",
+                f"### Level {level} - Lesson {episode} / Part {episode}",
                 "",
                 f"- Lesson ID: {lesson_id}",
-                f"- Theme: {theme}",
+                f"- Episode beat: {theme}",
                 f"- Score: {score}",
                 "",
             ])
@@ -304,7 +365,7 @@ def write_story_text_output(result: dict[str, Any], output_path: Path) -> None:
 
 
 async def async_main() -> None:
-    parser = argparse.ArgumentParser(description="Generate judged story lessons from a theme list.")
+    parser = argparse.ArgumentParser(description="Generate judged story lessons from a content plan.")
     parser.add_argument("--plan", default="plans/content_plan.example.json", help="Path to a JSON content plan.")
     parser.add_argument("--output", help="Override output JSON path.")
     parser.add_argument(
