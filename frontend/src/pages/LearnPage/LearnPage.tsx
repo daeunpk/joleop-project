@@ -973,7 +973,7 @@ export default function LearnPage() {
             onSpeakText={speakRoleplayText}
             onFinish={finishBackendSession}
             onExit={() => {
-              navigate('/review', { replace: true, state: { completedAt: Date.now() } })
+              navigate(bookId ? `/books/${bookId}/chapters` : '/books', { replace: true })
             }}
           />
         )}
