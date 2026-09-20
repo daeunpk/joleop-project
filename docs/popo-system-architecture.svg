@@ -1,0 +1,242 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1500" height="1050" viewBox="0 0 1500 1050">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#222"/>
+    </marker>
+    <marker id="dash-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#333"/>
+    </marker>
+    <style>
+      .title { font: 700 28px Arial, sans-serif; fill: #111; }
+      .h1 { font: 700 22px Arial, sans-serif; fill: #111; }
+      .h2 { font: 700 18px Arial, sans-serif; fill: #111; }
+      .txt { font: 15px Arial, sans-serif; fill: #111; }
+      .small { font: 13px Arial, sans-serif; fill: #111; }
+      .tiny { font: 12px Arial, sans-serif; fill: #333; }
+      .white { fill: #fff; }
+      .line { stroke: #222; stroke-width: 2.2; fill: none; marker-end: url(#arrow); }
+      .thin { stroke: #333; stroke-width: 1.8; fill: none; marker-end: url(#arrow); }
+      .dash { stroke: #333; stroke-width: 1.8; stroke-dasharray: 7 6; fill: none; marker-end: url(#dash-arrow); }
+      .label { fill: #fff; stroke: #ddd; stroke-width: 1; }
+      .aws { fill: #fff; stroke: #222; stroke-width: 2.4; }
+      .region { fill: #f7fffb; stroke: #00a6a6; stroke-width: 2.2; stroke-dasharray: 6 5; }
+      .vpc { fill: #fbf9ff; stroke: #8a43ff; stroke-width: 2.2; }
+      .public { fill: #f5ffe7; stroke: #6aaa00; stroke-width: 2.2; }
+      .private { fill: #e9fbfd; stroke: #00aeb3; stroke-width: 2.2; }
+      .orange-box { fill: #fff6ec; stroke: #ff7a00; stroke-width: 2.2; }
+      .blue-box { fill: #f3f9ff; stroke: #0096ff; stroke-width: 2.2; }
+      .pink-box { fill: #fff7fc; stroke: #ed00aa; stroke-width: 2.2; }
+      .gray-box { fill: #fafafa; stroke: #777; stroke-width: 1.8; }
+      .green { fill: #65aa00; }
+      .orange { fill: #ff7a00; }
+      .magenta { fill: #d200d7; }
+      .pink { fill: #f0057f; }
+      .blue { fill: #0096ff; }
+      .gray { fill: #666; }
+      .teal { fill: #00aeb3; }
+      .violet { fill: #8a43ff; }
+      .aws-orange { fill: #ff9900; }
+      .num { font: 700 30px Arial, sans-serif; fill: #fff; }
+    </style>
+  </defs>
+
+  <rect width="1500" height="1050" fill="#fff"/>
+  <text x="40" y="48" class="title">POPO Children English Story Learning - System Architecture</text>
+
+  <!-- Top row -->
+  <g transform="translate(120,95)">
+    <circle cx="0" cy="0" r="15" fill="none" stroke="#222" stroke-width="2.2"/>
+    <circle cx="34" cy="0" r="15" fill="none" stroke="#222" stroke-width="2.2"/>
+    <circle cx="17" cy="-25" r="15" fill="none" stroke="#222" stroke-width="2.2"/>
+    <path d="M-23 45 C-18 20 18 20 23 45" fill="none" stroke="#222" stroke-width="2.2"/>
+    <path d="M12 45 C18 20 54 20 59 45" fill="none" stroke="#222" stroke-width="2.2"/>
+    <text x="-6" y="73" class="txt">Users</text>
+  </g>
+
+  <path d="M210 103 H310" class="line"/>
+
+  <g transform="translate(340,65)">
+    <path d="M5 70 L45 12 L85 70 Z" class="aws-orange"/>
+    <text x="105" y="43" class="h1">AWS Amplify</text>
+    <text x="105" y="68" class="txt">React/Vite Frontend</text>
+    <text x="105" y="91" class="tiny">daeun.d2pvyyx48vb41m.amplifyapp.com</text>
+  </g>
+
+  <g transform="translate(790,68)">
+    <circle cx="20" cy="25" r="28" class="gray"/>
+    <text x="11" y="36" class="num">6</text>
+    <text x="74" y="33" class="h1">GitHub</text>
+    <text x="74" y="58" class="txt">daeunpk/joleop-project</text>
+    <text x="74" y="80" class="tiny">branch: daeun</text>
+  </g>
+
+  <path d="M1000 102 H1110" class="line"/>
+
+  <g transform="translate(1140,66)">
+    <circle cx="24" cy="15" r="12" fill="#e8f4ff" stroke="#0096ff" stroke-width="2"/>
+    <polygon points="21,9 21,21 31,15" fill="#0096ff"/>
+    <circle cx="17" cy="48" r="11" fill="#e8f4ff" stroke="#0096ff" stroke-width="2"/>
+    <circle cx="54" cy="48" r="11" fill="#e8f4ff" stroke="#0096ff" stroke-width="2"/>
+    <circle cx="91" cy="48" r="11" fill="#e8f4ff" stroke="#0096ff" stroke-width="2"/>
+    <path d="M24 27 V48 H17 M24 48 H54 M54 48 H91" fill="none" stroke="#0096ff" stroke-width="2.2"/>
+    <text x="-18" y="88" class="txt">Amplify Build</text>
+  </g>
+
+  <!-- AWS Cloud -->
+  <rect x="40" y="150" width="1390" height="740" class="aws"/>
+  <rect x="56" y="166" width="46" height="46" fill="#232f3e"/>
+  <text x="63" y="194" font-family="Arial, sans-serif" font-size="15" font-weight="700" fill="#fff">aws</text>
+  <text x="118" y="195" class="h1">AWS Cloud</text>
+
+  <!-- Region -->
+  <rect x="80" y="250" width="1270" height="590" class="region"/>
+  <rect x="100" y="270" width="52" height="52" class="teal"/>
+  <path d="M116 309 V282 H135 M116 291 H138" fill="none" stroke="#fff" stroke-width="3"/>
+  <text x="170" y="292" class="h1">ap-southeast-2</text>
+  <text x="170" y="316" class="txt">Sydney Region</text>
+
+  <!-- Amplify inside cloud -->
+  <g transform="translate(392,172)">
+    <rect x="0" y="0" width="78" height="78" rx="5" class="violet"/>
+    <circle cx="39" cy="39" r="25" fill="none" stroke="#fff" stroke-width="2.4"/>
+    <circle cx="39" cy="14" r="5" fill="none" stroke="#fff" stroke-width="2.2"/>
+    <circle cx="60" cy="50" r="5" fill="none" stroke="#fff" stroke-width="2.2"/>
+    <circle cx="19" cy="51" r="5" fill="none" stroke="#fff" stroke-width="2.2"/>
+    <path d="M39 19 L60 45 M56 51 H24 M21 46 L36 19" fill="none" stroke="#fff" stroke-width="2"/>
+  </g>
+  <text x="326" y="272" class="h2">Amplify Hosting</text>
+  <text x="327" y="294" class="txt">Frontend + HTTPS</text>
+
+  <path d="M424 143 V172" class="thin"/>
+  <path d="M431 250 V395" class="line"/>
+  <rect x="450" y="315" width="120" height="52" rx="4" class="label"/>
+  <text x="466" y="337" class="small">HTTPS</text>
+  <text x="466" y="354" class="small">/api/v1/*</text>
+
+  <!-- VPC -->
+  <rect x="120" y="345" width="865" height="430" class="vpc"/>
+  <rect x="140" y="365" width="44" height="44" class="violet" opacity="0.9"/>
+  <path d="M154 398 V383 C154 373 170 373 170 383 V398" fill="none" stroke="#fff" stroke-width="2.4"/>
+  <rect x="150" y="390" width="25" height="15" fill="none" stroke="#fff" stroke-width="2"/>
+  <text x="200" y="390" class="h2">Virtual Private Cloud (VPC)</text>
+  <text x="200" y="413" class="txt">vpc-0e8636fa59689feb1</text>
+
+  <!-- Public subnet -->
+  <rect x="155" y="448" width="690" height="205" class="public"/>
+  <rect x="175" y="470" width="40" height="40" class="green"/>
+  <path d="M187 500 V486 C187 477 203 477 203 486 V500" fill="none" stroke="#fff" stroke-width="2"/>
+  <rect x="184" y="492" width="22" height="13" fill="none" stroke="#fff" stroke-width="2"/>
+  <text x="232" y="494" class="h2">Public subnet</text>
+  <text x="232" y="516" class="txt">ECS Express Mode runs the backend container</text>
+
+  <rect x="190" y="545" width="155" height="78" class="orange-box"/>
+  <text x="214" y="574" class="h2">Task Definition</text>
+  <text x="214" y="599" class="small">image, env vars, health</text>
+
+  <rect x="390" y="545" width="405" height="78" class="orange-box"/>
+  <rect x="410" y="562" width="46" height="46" class="orange"/>
+  <path d="M421 598 L433 570 L446 598 Z" fill="none" stroke="#fff" stroke-width="3"/>
+  <text x="475" y="574" class="h2">FastAPI Backend</text>
+  <text x="475" y="597" class="txt">port 8000 | Auth, Learning, Review, AI, TTS, STT</text>
+  <path d="M345 584 H390" class="thin"/>
+
+  <circle cx="118" cy="555" r="34" class="violet"/>
+  <text x="109" y="566" class="num">1</text>
+  <circle cx="845" cy="555" r="34" class="orange"/>
+  <text x="836" y="566" class="num">2</text>
+
+  <!-- Private subnet -->
+  <rect x="155" y="680" width="690" height="72" class="private"/>
+  <rect x="175" y="696" width="38" height="38" class="teal"/>
+  <path d="M186 726 V712 C186 704 202 704 202 712 V726" fill="none" stroke="#fff" stroke-width="2"/>
+  <rect x="183" y="718" width="22" height="13" fill="none" stroke="#fff" stroke-width="2"/>
+  <text x="232" y="720" class="h2">Private subnet</text>
+
+  <rect x="415" y="666" width="310" height="96" class="pink-box"/>
+  <ellipse cx="462" cy="713" rx="32" ry="22" fill="#336791"/>
+  <path d="M443 710 C443 684 482 684 482 710 C482 740 443 740 443 710" fill="none" stroke="#fff" stroke-width="2"/>
+  <text x="515" y="705" class="h2">RDS PostgreSQL</text>
+  <text x="515" y="729" class="txt">DB: story_learning</text>
+  <path d="M592 623 V666" class="thin"/>
+  <rect x="605" y="630" width="62" height="27" rx="3" class="label"/>
+  <text x="616" y="649" class="small">5432</text>
+
+  <!-- Gateway -->
+  <g transform="translate(925,555)">
+    <circle cx="0" cy="0" r="35" fill="#fff" stroke="#8a43ff" stroke-width="3"/>
+    <path d="M-14 14 V-12 L0 -23 L14 -12 V14 Z" fill="none" stroke="#8a43ff" stroke-width="3"/>
+    <path d="M-7 -8 H8 M-7 3 H8" stroke="#8a43ff" stroke-width="3"/>
+  </g>
+  <text x="875" y="613" class="h2">Internet Gateway</text>
+  <path d="M795 584 H890" class="thin"/>
+
+  <!-- Right services -->
+  <g transform="translate(1060,320)">
+    <rect x="0" y="0" width="250" height="98" class="blue-box"/>
+    <rect x="16" y="16" width="64" height="64" class="green"/>
+    <path d="M30 38 C30 28 66 28 66 38 V62 C66 72 30 72 30 62 Z" fill="none" stroke="#fff" stroke-width="3"/>
+    <path d="M30 38 C30 47 66 47 66 38" fill="none" stroke="#fff" stroke-width="3"/>
+    <text x="96" y="42" class="h2">Amazon S3</text>
+    <text x="96" y="66" class="txt">lesson images / assets</text>
+  </g>
+  <path d="M795 562 H1005 V369 H1060" class="thin"/>
+  <circle cx="1335" cy="369" r="34" class="green"/>
+  <text x="1326" y="380" class="num">3</text>
+
+  <g transform="translate(1060,455)">
+    <rect x="0" y="0" width="250" height="98" class="orange-box"/>
+    <rect x="16" y="16" width="64" height="64" class="orange"/>
+    <path d="M30 34 L48 24 L66 34 V61 L48 74 L30 61 Z" fill="none" stroke="#fff" stroke-width="3"/>
+    <path d="M48 24 V74 M30 34 L48 45 L66 34" fill="none" stroke="#fff" stroke-width="2"/>
+    <text x="96" y="42" class="h2">Amazon ECR</text>
+    <text x="96" y="66" class="txt">yeongcha-backend:latest</text>
+  </g>
+  <path d="M1310 504 H1385" class="dash"/>
+
+  <g transform="translate(1060,590)">
+    <rect x="0" y="0" width="250" height="98" class="pink-box"/>
+    <rect x="16" y="16" width="64" height="64" class="pink"/>
+    <circle cx="48" cy="48" r="22" fill="none" stroke="#fff" stroke-width="3"/>
+    <path d="M28 48 H68 M48 27 V69 M34 35 C43 41 53 41 62 35 M34 61 C43 55 53 55 62 61" fill="none" stroke="#fff" stroke-width="2"/>
+    <text x="96" y="42" class="h2">CloudWatch Logs</text>
+    <text x="96" y="66" class="txt">backend runtime logs</text>
+  </g>
+  <path d="M795 604 H1005 V639 H1060" class="thin"/>
+  <circle cx="1335" cy="639" r="34" class="pink"/>
+  <text x="1326" y="650" class="num">4</text>
+
+  <!-- CI/CD -->
+  <path d="M905 150 V210 H510" class="dash"/>
+  <rect x="548" y="185" width="230" height="42" rx="4" class="label"/>
+  <text x="566" y="211" class="small">Git push -> Amplify auto deploy</text>
+  <path d="M1220 150 V250 H1185 V455" class="dash"/>
+  <rect x="1235" y="232" width="150" height="54" rx="4" class="label"/>
+  <text x="1250" y="254" class="small">CloudShell</text>
+  <text x="1250" y="272" class="small">Docker build/push</text>
+
+  <!-- External services -->
+  <g transform="translate(210,915)">
+    <rect x="0" y="0" width="610" height="86" rx="6" class="gray-box"/>
+    <text x="24" y="32" class="h2">External AI / Auth Services</text>
+    <text x="24" y="58" class="txt">Kakao OAuth | edge-tts | faster-whisper | Ollama / Llama / Qwen</text>
+  </g>
+  <path d="M600 623 V915" class="dash"/>
+  <circle cx="850" cy="958" r="34" class="magenta"/>
+  <text x="841" y="969" class="num">5</text>
+
+  <!-- Content pipeline -->
+  <g transform="translate(880,910)">
+    <rect x="0" y="0" width="420" height="86" rx="6" fill="#fffdf2" stroke="#999" stroke-width="1.8"/>
+    <text x="22" y="32" class="h2">Local Content Generation Pipeline</text>
+    <text x="22" y="58" class="txt">scripts -> outputs/images -> seed scripts -> RDS</text>
+  </g>
+  <path d="M880 952 H690 V762" class="thin"/>
+
+  <!-- Number legend -->
+  <g transform="translate(52,930)">
+    <rect x="0" y="0" width="125" height="86" rx="6" fill="#fff" stroke="#ddd"/>
+    <text x="16" y="25" class="h2">Legend</text>
+    <text x="16" y="50" class="tiny">1 Frontend/API</text>
+    <text x="16" y="68" class="tiny">2 Backend</text>
+  </g>
+</svg>

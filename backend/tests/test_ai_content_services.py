@@ -2,7 +2,7 @@ import pytest
 
 from app.models import RoleplayMission
 from app.services.evaluation import DescriptionEvaluationService
-from app.services.roleplay import MockRoleplayService
+from app.services.roleplay import MockRoleplayService, roleplay_runtime_context
 
 
 def test_word_guess_description_uses_blank_word() -> None:
@@ -28,6 +28,27 @@ def test_description_returns_model_answer_feedback_for_mismatch() -> None:
 
     assert result["passed"] is False
     assert result["feedback"] == "모범 답안을 보고 다시 말해볼까요?"
+
+
+def test_roleplay_context_preserves_chapter_scene_details() -> None:
+    mission = RoleplayMission(
+        mission_id=1,
+        book_id=1,
+        title="Find the bird",
+        description="Popo and friends found a lost baby bird trapped in the bush.",
+        character_name="Popo",
+        opening_message="Can you tell me what's wrong?",
+        player_goal="The child should express concern for the baby bird's safety.",
+        model_answer="It's stuck in the thorns!",
+        similar_answers=[],
+        hint_sequence=[],
+        required_turns=3,
+    )
+
+    context = roleplay_runtime_context(mission)
+
+    assert "lost baby bird trapped in the bush" in context["situation"]
+    assert context["situation"] != "You are Popo. You are stuck. Ask Popo for help."
 
 
 @pytest.mark.asyncio

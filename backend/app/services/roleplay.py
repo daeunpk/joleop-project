@@ -105,14 +105,12 @@ def _child_facing_situation(
     lowered = f"{player_goal} {model_answer} {clean_scene}".lower()
     if "stuck behind" in lowered and "chair" in lowered:
         return f"You are {child_role}. You are stuck behind a chair. Ask {ai_character} for help."
-    if "stuck" in lowered or "trapped" in lowered:
-        return f"You are {child_role}. You are stuck. Ask {ai_character} for help."
     if "safe side door" in lowered or "side door" in lowered:
         return "You are with your story friend in a crowded ballroom. You see a safe side door. Tell your friend how to leave safely."
-    if "help" in lowered:
-        return f"You are {child_role}. Talk to {ai_character} and ask for help."
     if clean_scene:
-        return clean_scene
+        if "stuck" in lowered or "trapped" in lowered or "help" in lowered:
+            return f"You are {child_role}. {clean_scene} Ask {ai_character} what you can do next."
+        return f"You are {child_role}. {clean_scene}"
     return f"You are {child_role}. Talk to {ai_character} in this story scene."
 
 
