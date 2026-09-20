@@ -28,9 +28,9 @@ function TrophyAnimation({ className }: { className?: string }) {
 const PROGRESS_INTRO = 0.70
 const PROGRESS_CHAT_RANGE = 0.30
 
-const ROLEPLAY_INITIAL_SILENCE_TIMEOUT_MS = 7000
-const ROLEPLAY_AFTER_SPEECH_TIMEOUT_MS = 2600
-const ROLEPLAY_MAX_RECORD_MS = 15000
+const ROLEPLAY_INITIAL_SILENCE_TIMEOUT_MS = 5000
+const ROLEPLAY_AFTER_SPEECH_TIMEOUT_MS = 1800
+const ROLEPLAY_MAX_RECORD_MS = 12000
 /**
  * 결과 화면 등장 순서.
  * 트로피(+소리) → Nice Try → 회색 별 3개 → 보상 별 하나씩(+소리) → 포인트 → 설명 → 버튼
@@ -269,7 +269,12 @@ export default function RoleplayScreen({
     try {
       const { audio: blob, transcript } = await recordRoleplaySpeech()
       const cleanTranscript = transcript.trim()
-      const result = await onRecord(blob, cleanTranscript || undefined)
+      if (!cleanTranscript) {
+        setSpeechError('Could not hear that. Please try again.')
+        setRecordState('idle')
+        return
+      }
+      const result = await onRecord(blob, cleanTranscript)
       if (!result.userTranscript.trim()) {
         setSpeechError('Could not hear that. Please try again.')
         setRecordState('idle')

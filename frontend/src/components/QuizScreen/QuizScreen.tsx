@@ -4,8 +4,8 @@ import { IMAGES } from '../../constants/assets'
 import ResponsiveSceneImage from '../ResponsiveSceneImage/ResponsiveSceneImage'
 import styles from './QuizScreen.module.css'
 
-const QUIZ_MAX_RECORD_MS = 12000
-const QUIZ_SILENCE_MS = 2200
+const QUIZ_MAX_RECORD_MS = 9000
+const QUIZ_SILENCE_MS = 1400
 
 type QuizState = 'idle' | 'recording' | 'done'
 type QuizFeedback = 'correct' | 'wrong' | ''

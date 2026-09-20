@@ -60,9 +60,9 @@ const smartFlowCards = [
   { label: 'Word', icon: 'C', tone: 'word' },
 ]
 
-const REVIEW_INITIAL_SILENCE_TIMEOUT_MS = 7000
-const REVIEW_AFTER_SPEECH_TIMEOUT_MS = 2600
-const REVIEW_MAX_RECORD_MS = 15000
+const REVIEW_INITIAL_SILENCE_TIMEOUT_MS = 5000
+const REVIEW_AFTER_SPEECH_TIMEOUT_MS = 1400
+const REVIEW_MAX_RECORD_MS = 12000
 
 function activeProfileKey() {
   try {

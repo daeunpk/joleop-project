@@ -38,7 +38,7 @@ export default function ChapterSelectPage() {
   const startChapter = (chapterNumber: number) => {
     if (!book || !isChapterUnlocked(book, chapterNumber, stars, results)) return
     selectBook({ ...book, currentLesson: chapterNumber })
-    navigate(`/learn/${book.id}?chapter=${chapterNumber}`)
+    navigate(`/learn/${book.id}?chapter=${chapterNumber}&restart=${Date.now()}`)
   }
 
   if (isLoading) {
