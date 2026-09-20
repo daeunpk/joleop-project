@@ -1,6 +1,6 @@
 import pytest
 
-from ai.roleplay import judge_answer
+from ai.roleplay import RoleplaySession, judge_answer, start_roleplay_session
 from app.models import RoleplayMission
 from app.services.evaluation import DescriptionEvaluationService
 from app.services.roleplay import MockRoleplayService, roleplay_runtime_context
@@ -96,6 +96,28 @@ def test_roleplay_judge_rejects_too_short_unrelated_response() -> None:
     passed, _ = judge_answer(scenario, "Hey")
 
     assert passed is False
+
+
+def test_roleplay_opening_uses_direction_context_without_llm() -> None:
+    scenario = RoleplayScenario(
+        scenario_id="direction-1",
+        topic="direction",
+        level=2,
+        scene_description="Popo's friends need his help to find their way in Sunflower Meadow.",
+        character_name="Friendly Hunter",
+        character_personality="Kind and helpful.",
+        opening_line="",
+        max_turns=3,
+        conversation_flow=[],
+        player_goal="Ask the friendly hunter for directions to get back to the group.",
+        model_answer="Where is my friend Toto?",
+        similar_answers=[],
+        hint_sequence=[],
+    )
+
+    opening = start_roleplay_session(RoleplaySession(scenario))
+
+    assert opening == "Hello, I am Friendly Hunter. Are you looking for someone?"
 
 
 @pytest.mark.asyncio

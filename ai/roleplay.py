@@ -334,16 +334,20 @@ def _get_opening_line(scenario: RoleplayScenario) -> str:
     if scenario.opening_line.strip():
         return scenario.opening_line.strip()
 
-    prompt = f"""You are {scenario.character_name}.
-Personality, motivation, and speaking style: {scenario.character_personality}
-Scene: {scenario.scene_description}
-The child's goal: {scenario.player_goal}
+    character = scenario.character_name.strip() or "your story friend"
+    goal = scenario.player_goal.strip().rstrip(".")
+    scene = scenario.scene_description.strip().rstrip(".")
+    lowered = f"{goal} {scene}".lower()
 
-Speak directly to the child in character. Say one short opening line of no more
-than 15 words and end with one simple question that invites the child to answer.
-Do not narrate the scene, reveal the model answer, or complete the goal yourself."""
-
-    return generate_text([{"role": "user", "content": prompt}], max_tokens=60)
+    if "direction" in lowered or "find their way" in lowered or "where" in lowered:
+        return f"Hello, I am {character}. Are you looking for someone?"
+    if "stuck" in lowered or "trapped" in lowered or "help" in lowered:
+        return f"Hi, I am {character}. What help do you need?"
+    if goal.lower().startswith("tell "):
+        return f"Hi, I am {character}. What do you want to tell me?"
+    if goal.lower().startswith("ask "):
+        return f"Hi, I am {character}. What do you want to ask?"
+    return f"Hi, I am {character}. What should we do next?"
 
 
 # ─── WebSocket 실시간 연동 인터페이스 (프론트엔드 연동용) ──────

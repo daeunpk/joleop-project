@@ -331,6 +331,13 @@ class MockRoleplayService(RoleplayService):
                 return "Let's move slowly and stay together."
             return "We did it. You are safe now!"
 
+        if "direction" in lowered or "find their way" in lowered or "where" in lowered:
+            if turn <= 1:
+                return "Yes, I can help. Who are you looking for?"
+            if turn == 2:
+                return "Look near the sunflowers. Your friends may be that way."
+            return "Great asking. Let's follow the path together."
+
         if score >= 70:
             return "Thank you! That helps a lot."
 
