@@ -42,8 +42,13 @@ HF_TOKEN            = os.getenv("HF_TOKEN", "")          # STT HuggingFace fallb
 
 # ─── LLM Provider ────────────────────────────────────────────
 # - anthropic: Claude API 사용
+# - groq: Groq hosted API 사용
 # - ollama: 로컬 Ollama 사용 (권장: llama3.1:8b)
 LLM_PROVIDER        = os.getenv("LLM_PROVIDER", "ollama")
+GROQ_API_KEY        = os.getenv("GROQ_API_KEY", "")
+GROQ_MODEL          = os.getenv("GROQ_MODEL", "openai/gpt-oss-20b")
+GROQ_BASE_URL       = os.getenv("GROQ_BASE_URL", "https://api.groq.com/openai/v1")
+GROQ_TIMEOUT_SECONDS = float(os.getenv("GROQ_TIMEOUT_SECONDS", "10"))
 OLLAMA_BASE_URL     = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
 OLLAMA_MODEL        = os.getenv("OLLAMA_MODEL", "llama3.1:8b")
 OLLAMA_TIMEOUT_SECONDS = float(os.getenv("OLLAMA_TIMEOUT_SECONDS", "8"))
