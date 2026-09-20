@@ -148,6 +148,11 @@ export default function QuizScreen({ quiz, onNext, onRecord, currentStep, totalS
           setFeedback(result >= 70 ? 'correct' : 'wrong')
         } else if (result && typeof result === 'object') {
           setSpokenAnswer(result.transcript)
+          if (!result.passed && (!result.transcript.trim() || result.transcript.trim().length <= 1)) {
+            setState('idle')
+            setError('Could not hear that. Please try again.')
+            return
+          }
           setFeedback(result.passed ? 'correct' : 'wrong')
         }
         setState('done')

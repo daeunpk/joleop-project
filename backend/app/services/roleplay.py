@@ -30,10 +30,10 @@ logger = logging.getLogger(__name__)
 
 
 def roleplay_runtime_context(mission: RoleplayMission) -> dict:
-    child_role = mission.character_name or "your story character"
+    child_role = "story helper"
     model_answer = mission.model_answer or ""
     addressed_name = _addressed_character(model_answer)
-    ai_character = addressed_name if addressed_name and addressed_name.lower() != child_role.lower() else child_role
+    ai_character = addressed_name or mission.character_name or "your story friend"
     player_goal = mission.player_goal or mission.description
     opening_message = mission.opening_message or ""
     situation = _child_facing_situation(
@@ -43,23 +43,8 @@ def roleplay_runtime_context(mission: RoleplayMission) -> dict:
         model_answer=model_answer,
         scene_description=mission.description or "",
     )
-
-    if addressed_name and addressed_name.lower() != child_role.lower():
-        opening_message = (
-            f"{child_role}, are you okay? What happened?"
-            if child_role and child_role.lower() != "your story friend"
-            else "Are you okay? What happened?"
-        )
-        player_goal = (
-            f"You are {child_role}. Talk to {ai_character} and ask for help in this story scene."
-        )
-        situation = _child_facing_situation(
-            child_role=child_role,
-            ai_character=ai_character,
-            player_goal=mission.player_goal or "",
-            model_answer=model_answer,
-            scene_description=mission.description or "",
-        )
+    if addressed_name and not opening_message:
+        opening_message = "Hi! What can I help you with?"
 
     return {
         "ai_character": ai_character,
@@ -104,14 +89,16 @@ def _child_facing_situation(
     clean_scene = _clean_scene_description(scene_description)
     lowered = f"{player_goal} {model_answer} {clean_scene}".lower()
     if "stuck behind" in lowered and "chair" in lowered:
-        return f"You are {child_role}. You are stuck behind a chair. Ask {ai_character} for help."
+        return f"You are a {child_role}. Someone is stuck behind a chair. Ask {ai_character} for help."
     if "safe side door" in lowered or "side door" in lowered:
         return "You are with your story friend in a crowded ballroom. You see a safe side door. Tell your friend how to leave safely."
     if clean_scene:
+        if player_goal and player_goal.strip().lower().startswith(("ask ", "tell ", "say ", "help ")):
+            return f"You are a {child_role}. {clean_scene} {player_goal.strip()}"
         if "stuck" in lowered or "trapped" in lowered or "help" in lowered:
-            return f"You are {child_role}. {clean_scene} Ask {ai_character} what you can do next."
-        return f"You are {child_role}. {clean_scene}"
-    return f"You are {child_role}. Talk to {ai_character} in this story scene."
+            return f"You are a {child_role}. {clean_scene} Talk to {ai_character} and help with the story problem."
+        return f"You are a {child_role}. {clean_scene}"
+    return f"You are a {child_role}. Talk to {ai_character} in this story scene."
 
 
 def _clean_scene_description(scene_description: str) -> str:

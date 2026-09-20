@@ -1,8 +1,10 @@
 import pytest
 
+from ai.roleplay import judge_answer
 from app.models import RoleplayMission
 from app.services.evaluation import DescriptionEvaluationService
 from app.services.roleplay import MockRoleplayService, roleplay_runtime_context
+from shared.models import RoleplayScenario
 
 
 def test_word_guess_description_uses_blank_word() -> None:
@@ -49,6 +51,51 @@ def test_roleplay_context_preserves_chapter_scene_details() -> None:
 
     assert "lost baby bird trapped in the bush" in context["situation"]
     assert context["situation"] != "You are Popo. You are stuck. Ask Popo for help."
+
+
+def test_roleplay_context_treats_character_name_as_npc() -> None:
+    mission = RoleplayMission(
+        mission_id=2,
+        book_id=1,
+        title="Ask directions",
+        description="Popo's friends need his help to find their way in Sunflower Meadow.",
+        character_name="Friendly Hunter",
+        opening_message="",
+        player_goal="Ask the friendly hunter for directions to get back to the group.",
+        model_answer="Where is my friend Toto?",
+        similar_answers=[],
+        hint_sequence=[],
+        required_turns=3,
+    )
+
+    context = roleplay_runtime_context(mission)
+
+    assert context["ai_character"] == "Friendly Hunter"
+    assert context["child_role"] == "story helper"
+    assert "You are a story helper" in context["situation"]
+    assert "You are Friendly Hunter" not in context["situation"]
+
+
+def test_roleplay_judge_rejects_too_short_unrelated_response() -> None:
+    scenario = RoleplayScenario(
+        scenario_id="direction-1",
+        topic="direction",
+        level=2,
+        scene_description="Popo's friends need help finding their way.",
+        character_name="Friendly Hunter",
+        character_personality="Kind and helpful.",
+        opening_line="Hi! What can I help you with?",
+        max_turns=3,
+        conversation_flow=[],
+        player_goal="Ask the friendly hunter for directions to get back to the group.",
+        model_answer="Where is my friend Toto?",
+        similar_answers=["Can you show me where my friends are?"],
+        hint_sequence=[],
+    )
+
+    passed, _ = judge_answer(scenario, "Hey")
+
+    assert passed is False
 
 
 @pytest.mark.asyncio

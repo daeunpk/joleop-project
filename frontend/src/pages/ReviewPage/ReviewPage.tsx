@@ -668,11 +668,14 @@ export default function ReviewPage() {
     setSpokenTranscript('')
     try {
       const speech = await recordReviewSpeech(setSpokenTranscript)
-      const transcript = speech.transcript.trim()
-        ? speech.transcript
+      const browserTranscript = speech.transcript.trim()
+      const useBrowserTranscript = browserTranscript
+        && isSpokenAnswerCorrect(current.answer, browserTranscript)
+      const transcript = useBrowserTranscript
+        ? browserTranscript
         : usesBackendApi()
           ? (await transcribeReviewSpeech(speech.audio)).transcript
-          : ''
+          : browserTranscript
       setSpokenTranscript(transcript)
       if (!transcript.trim()) {
         setSpokenTranscript('I could not hear you. Please try again.')

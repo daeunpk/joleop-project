@@ -814,14 +814,20 @@ export default function LearnPage() {
     try {
       const expected = currentPage?.text ?? ''
       const speech = await recordRepeatSpeech(expected)
+      const browserTranscript = speech.result.correct ? speech.transcript : undefined
       const result = backendSession && repeat
-        ? await createRepeatAttempt(backendSession.sessionId, repeat.content.questionId, speech.audio, speech.transcript).then((attempt) => ({
+        ? await createRepeatAttempt(backendSession.sessionId, repeat.content.questionId, speech.audio, browserTranscript).then((attempt) => ({
             recognized: attempt.transcript,
             correct: attempt.passed,
             score: attempt.score / 100,
             wordResults: attempt.wordResults,
           }))
         : speech.result
+      if (!result.correct && (!result.recognized.trim() || result.score <= 0.05)) {
+        setSttResult(null)
+        setRepeatState('idle')
+        return
+      }
       setSttResult(result)
       setRepeatScores((scores) => [...scores, Math.round(result.score * 100)])
       setRepeatState('done')

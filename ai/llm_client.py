@@ -15,6 +15,7 @@ from shared.settings import (
     MODELS,
     OLLAMA_BASE_URL,
     OLLAMA_MODEL,
+    OLLAMA_TIMEOUT_SECONDS,
 )
 
 
@@ -93,7 +94,7 @@ def _generate_with_ollama(
                 "temperature": temperature,
             },
         },
-        timeout=120,
+        timeout=OLLAMA_TIMEOUT_SECONDS,
     )
     resp.raise_for_status()
     return resp.json()["message"]["content"].strip()

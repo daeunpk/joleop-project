@@ -9,7 +9,6 @@
 - 목표 달성을 기억하고 3턴 대화가 끝나면 최종 판정
 """
 
-import json
 import re
 import time
 import difflib
@@ -111,7 +110,7 @@ def get_character_response(
     response = generate_text(
         messages_to_send,
         system=session.system_prompt,
-        max_tokens=150,
+        max_tokens=90,
     )
     session.conversation_history.append({"role": "assistant", "content": response})
 
@@ -133,8 +132,12 @@ def start_roleplay_session(session: RoleplaySession) -> str:
 
 ROLEPLAY_STOPWORDS = {
     "a", "an", "and", "are", "am", "be", "i", "is", "it", "the", "to",
-    "we", "you", "your", "my", "of", "for", "with",
+    "we", "you", "your", "my", "of", "for", "with", "do", "does", "did",
+    "can", "could", "would", "should", "there", "here", "where", "what",
+    "who", "how", "please",
 }
+
+MIN_ROLEPLAY_CONTENT_WORDS = 2
 
 
 def _normalize_roleplay_text(text: str) -> str:
@@ -164,61 +167,42 @@ def _lexically_similar_to_model_answer(model_answer: str, user_input: str) -> bo
     return overlap >= 0.6
 
 
-def _parse_judge_result(text: str) -> dict:
-    cleaned = re.sub(r"```(?:json)?|```", "", text).strip()
-    decoder = json.JSONDecoder()
-    for match in re.finditer(r"\{", cleaned):
-        try:
-            result, _ = decoder.raw_decode(cleaned[match.start():])
-        except json.JSONDecodeError:
-            continue
-        if isinstance(result, dict) and "passed" in result:
-            return result
-    raise ValueError("Roleplay judge did not return a valid JSON result.")
+def _content_words(text: str) -> set[str]:
+    normalized = _normalize_roleplay_text(text)
+    return {
+        word
+        for word in normalized.split()
+        if word not in ROLEPLAY_STOPWORDS and len(word) > 1
+    }
 
 def judge_answer(scenario: RoleplayScenario, user_input: str) -> tuple[bool, str]:
     """
-    LLM으로 사용자 발화가 목표 달성인지 판단
-    정답이 완전히 동일하지 않아도 의미가 맞으면 패스
+    사용자 발화가 목표 달성에 가까운지 빠르게 판단한다.
+
+    운영 환경의 CPU Ollama는 한 턴에 LLM 판단과 캐릭터 응답을 모두 처리하면
+    지연이 커진다. 판단은 모범 답안·유사 답안과의 의미/키워드 겹침으로
+    보수적으로 처리하고, Ollama는 캐릭터 응답 생성에만 사용한다.
     """
     reference_answers = [scenario.model_answer, *scenario.similar_answers]
-    if any(
-        _normalize_roleplay_text(reference) == _normalize_roleplay_text(user_input)
-        for reference in reference_answers
-    ):
+    reference_answers = [answer for answer in reference_answers if answer]
+    user_content_words = _content_words(user_input)
+    if len(user_content_words) < MIN_ROLEPLAY_CONTENT_WORDS:
+        return False, "조금 더 구체적으로 말해볼까요?"
+
+    if any(_normalize_roleplay_text(reference) == _normalize_roleplay_text(user_input) for reference in reference_answers):
         return True, "모범 답안과 같은 의미로 잘 말했어요!"
 
-    prompt = f"""You are judging a child's English roleplay response in a fairy tale learning game.
+    if any(_lexically_similar_to_model_answer(reference, user_input) for reference in reference_answers):
+        return True, "모범 답안과 비슷한 의미로 잘 말했어요!"
 
-Player's goal: {scenario.player_goal}
-PRIMARY REFERENCE model answer: "{scenario.model_answer}"
-Three similar acceptable examples: {json.dumps(scenario.similar_answers, ensure_ascii=False)}
-Child said: "{user_input}"
+    goal_words = _content_words(scenario.player_goal)
+    model_words = set().union(*(_content_words(reference) for reference in reference_answers)) if reference_answers else set()
+    target_words = goal_words | model_words
+    if not target_words:
+        return True, "잘했어요!"
 
-Decide whether the child's sentence has the same practical meaning or communicative
-intent as the model answer in this roleplay context.
-
-PASS when:
-- it is a paraphrase of the model answer;
-- it achieves the same intent with different words or word order;
-- it is shorter or has small beginner grammar mistakes but remains understandable;
-- it gives another natural response that successfully achieves the player's goal.
-
-FAIL only when the meaning is unrelated, contradictory, unsafe, or does not achieve
-the goal. Do not require exact wording or exact keyword overlap.
-
-Reply ONLY with JSON: {{"passed": true/false, "reason": "one sentence in Korean"}}"""
-
-    try:
-        text = generate_text([{"role": "user", "content": prompt}], max_tokens=150)
-        result = _parse_judge_result(text)
-        return bool(result["passed"]), str(result.get("reason", ""))
-    except Exception:
-        passed = any(
-            _lexically_similar_to_model_answer(reference, user_input)
-            for reference in reference_answers
-        )
-        return passed, "잘했어요!" if passed else "조금 더 해볼까요?"
+    overlap = len(user_content_words & target_words) / max(len(target_words), 1)
+    return (overlap >= 0.35), "잘했어요!" if overlap >= 0.35 else "조금 더 해볼까요?"
 
 
 # ─── 무음 감지 이벤트 ────────────────────────────────────────

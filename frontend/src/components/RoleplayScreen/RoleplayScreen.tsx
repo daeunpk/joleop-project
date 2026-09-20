@@ -270,6 +270,11 @@ export default function RoleplayScreen({
       const { audio: blob, transcript } = await recordRoleplaySpeech()
       const cleanTranscript = transcript.trim()
       const result = await onRecord(blob, cleanTranscript || undefined)
+      if (!result.userTranscript.trim()) {
+        setSpeechError('Could not hear that. Please try again.')
+        setRecordState('idle')
+        return
+      }
       setUserAnswers(prev => [...prev, result.userTranscript])
       setNpcReplies(prev => {
         const next = [...prev]
