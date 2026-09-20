@@ -58,8 +58,8 @@ interface ReadToken {
 
 /** Must match the phaseExit animation duration in LearnPage.module.css */
 const PHASE_EXIT_MS = 230
-const REPEAT_INITIAL_SILENCE_TIMEOUT_MS = 4200
-const REPEAT_AFTER_SPEECH_TIMEOUT_MS = 1200
+const REPEAT_INITIAL_SILENCE_TIMEOUT_MS = 7000
+const REPEAT_AFTER_SPEECH_TIMEOUT_MS = 2600
 const REPEAT_AUTO_ADVANCE_MS = 420
 const TTS_HIGHLIGHT_LEAD_SECONDS = 0.1
 const TTS_HIGHLIGHT_START_PADDING_SECONDS = 0.02
@@ -343,13 +343,13 @@ export default function LearnPage() {
       let settled = false
       let hasSpeech = false
       const expectedWordCount = Array.from(expected.matchAll(/[A-Za-z0-9']+/g)).length
-      const maxRecordMs = Math.min(18000, Math.max(8500, expectedWordCount * 950))
-      let silenceTimer = window.setTimeout(() => finish(), REPEAT_INITIAL_SILENCE_TIMEOUT_MS)
+      const maxRecordMs = Math.min(22000, Math.max(12000, expectedWordCount * 1200))
+      let silenceTimer: number | null = null
       const maxRecordTimer = window.setTimeout(() => finish(), maxRecordMs)
       let autoAdvanceTimer: number | null = null
 
       const cleanup = () => {
-        window.clearTimeout(silenceTimer)
+        if (silenceTimer !== null) window.clearTimeout(silenceTimer)
         window.clearTimeout(maxRecordTimer)
         if (autoAdvanceTimer !== null) window.clearTimeout(autoAdvanceTimer)
         recognition?.abort()
@@ -367,7 +367,7 @@ export default function LearnPage() {
       const finish = () => {
         if (settled) return
         settled = true
-        window.clearTimeout(silenceTimer)
+        if (silenceTimer !== null) window.clearTimeout(silenceTimer)
         if (mediaRecorder.state !== 'inactive') {
           mediaRecorder.stop()
           return
@@ -380,14 +380,14 @@ export default function LearnPage() {
         const result = evaluateRepeatSpeech(expected, transcript, true)
         cleanup()
         resolve({
-          audio: new Blob(chunks, { type: 'audio/webm' }),
+          audio: new Blob(chunks, { type: mediaRecorder.mimeType || 'audio/webm' }),
           transcript,
           result,
         })
       }
 
       const restartSilenceTimer = () => {
-        window.clearTimeout(silenceTimer)
+        if (silenceTimer !== null) window.clearTimeout(silenceTimer)
         silenceTimer = window.setTimeout(
           () => finish(),
           hasSpeech ? REPEAT_AFTER_SPEECH_TIMEOUT_MS : REPEAT_INITIAL_SILENCE_TIMEOUT_MS,
@@ -402,10 +402,9 @@ export default function LearnPage() {
         reject(new Error('Recording failed.'))
       }
       mediaRecorder.onstop = complete
-      mediaRecorder.start()
+      mediaRecorder.start(250)
 
       if (!recognition) {
-        restartSilenceTimer()
         return
       }
 
@@ -431,7 +430,10 @@ export default function LearnPage() {
         hasSpeech = hasSpeech || Boolean(currentTranscript())
         restartSilenceTimer()
       }
-      recognition.onerror = () => {
+      recognition.onerror = (event) => {
+        if (event.error === 'not-allowed' || event.error === 'service-not-allowed') {
+          return
+        }
         restartSilenceTimer()
       }
       recognition.onend = () => {

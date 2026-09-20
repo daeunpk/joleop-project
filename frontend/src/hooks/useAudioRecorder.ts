@@ -29,7 +29,7 @@ export function useAudioRecorder() {
       recorder.onstop = () => {
         stream.getTracks().forEach((t) => t.stop())
         setState('idle')
-        resolve(new Blob(chunks, { type: 'audio/webm' }))
+        resolve(new Blob(chunks, { type: recorder.mimeType || 'audio/webm' }))
       }
       recorder.stop()
     })

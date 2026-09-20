@@ -4,8 +4,8 @@ import { IMAGES } from '../../constants/assets'
 import ResponsiveSceneImage from '../ResponsiveSceneImage/ResponsiveSceneImage'
 import styles from './QuizScreen.module.css'
 
-const QUIZ_MAX_RECORD_MS = 3800
-const QUIZ_SILENCE_MS = 650
+const QUIZ_MAX_RECORD_MS = 12000
+const QUIZ_SILENCE_MS = 2200
 
 type QuizState = 'idle' | 'recording' | 'done'
 type QuizFeedback = 'correct' | 'wrong' | ''
@@ -75,12 +75,12 @@ function recordQuizSpeech(durationMs = QUIZ_MAX_RECORD_MS): Promise<{ audio: Blo
     mediaRecorder.onstop = () => {
       cleanup()
       resolve({
-        audio: new Blob(chunks, { type: 'audio/webm' }),
+        audio: new Blob(chunks, { type: mediaRecorder.mimeType || 'audio/webm' }),
         transcript: transcript.trim(),
       })
     }
 
-    mediaRecorder.start()
+    mediaRecorder.start(250)
     maxTimer = window.setTimeout(finish, durationMs)
 
     if (!recognition) return
@@ -100,7 +100,10 @@ function recordQuizSpeech(durationMs = QUIZ_MAX_RECORD_MS): Promise<{ audio: Blo
       }
       restartSilenceTimer()
     }
-    recognition.onerror = () => {
+    recognition.onerror = (event) => {
+      if (event.error === 'not-allowed' || event.error === 'service-not-allowed') {
+        return
+      }
       if (transcript.trim()) finish()
     }
     recognition.onend = () => {

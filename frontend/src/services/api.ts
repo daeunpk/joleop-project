@@ -1030,6 +1030,15 @@ async function postForm<T>(path: string, form: FormData, token?: string | null):
   return handleResponse(res, 'POST', path)
 }
 
+function audioFileName(audio: Blob) {
+  const type = audio.type.toLowerCase()
+  if (type.includes('mp4') || type.includes('m4a') || type.includes('aac')) return 'recording.m4a'
+  if (type.includes('mpeg') || type.includes('mp3')) return 'recording.mp3'
+  if (type.includes('wav')) return 'recording.wav'
+  if (type.includes('ogg')) return 'recording.ogg'
+  return 'recording.webm'
+}
+
 export async function startOrResumeLearningSession(bookId: string, chapterNumber = 1, restart = false): Promise<LearningSessionData> {
   return post<LearningSessionData>(`/books/${bookId}/sessions`, { chapterNumber, restart }, getProfileToken())
 }
@@ -1065,7 +1074,7 @@ export async function createRepeatAttempt(
   transcript?: string,
 ): Promise<AttemptData> {
   const form = new FormData()
-  form.append('audio', audio, 'recording.webm')
+  form.append('audio', audio, audioFileName(audio))
   form.append('questionId', String(questionId))
   if (transcript?.trim()) form.append('transcript', transcript.trim())
   return postForm<AttemptData>(`/learning-sessions/${sessionId}/repeat/attempts`, form, getProfileToken())
@@ -1085,7 +1094,7 @@ export async function fetchDescriptionCourse(sessionId: number): Promise<Descrip
 
 export async function createDescriptionAttempt(sessionId: number, questionId: number, audio: Blob, transcript?: string): Promise<AttemptData> {
   const form = new FormData()
-  form.append('audio', audio, 'recording.webm')
+  form.append('audio', audio, audioFileName(audio))
   form.append('questionId', String(questionId))
   if (transcript?.trim()) {
     form.append('transcript', transcript.trim())
@@ -1112,7 +1121,7 @@ export async function createRoleplayMessage(
   transcript?: string,
 ): Promise<RoleplayMessageData> {
   const form = new FormData()
-  form.append('audio', audio, 'recording.webm')
+  form.append('audio', audio, audioFileName(audio))
   form.append('missionId', String(missionId))
   if (transcript?.trim()) form.append('transcript', transcript.trim())
   return postForm<RoleplayMessageData>(`/learning-sessions/${sessionId}/roleplay/messages`, form, getProfileToken())
@@ -1149,7 +1158,7 @@ export async function sendStoryTalkMessage(cardIds: number[], message: string): 
 
 export async function transcribeReviewSpeech(audio: Blob, transcript?: string): Promise<ReviewSpeechTranscriptData> {
   const form = new FormData()
-  form.append('audio', audio, 'recording.webm')
+  form.append('audio', audio, audioFileName(audio))
   if (transcript?.trim()) form.append('transcript', transcript.trim())
   return postForm<ReviewSpeechTranscriptData>('/reviews/speech/transcribe', form, getProfileToken())
 }
@@ -1161,7 +1170,7 @@ export async function sendReviewRoleplayMessage(
   history: Array<{ user: string; npc: string }> = [],
 ): Promise<ReviewRoleplayMessageData> {
   const form = new FormData()
-  form.append('audio', audio, 'recording.webm')
+  form.append('audio', audio, audioFileName(audio))
   form.append('cardId', String(cardId))
   form.append('historyJson', JSON.stringify(history))
   if (transcript?.trim()) form.append('transcript', transcript.trim())

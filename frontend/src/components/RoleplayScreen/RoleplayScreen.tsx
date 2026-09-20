@@ -28,9 +28,9 @@ function TrophyAnimation({ className }: { className?: string }) {
 const PROGRESS_INTRO = 0.70
 const PROGRESS_CHAT_RANGE = 0.30
 
-const ROLEPLAY_INITIAL_SILENCE_TIMEOUT_MS = 4200
-const ROLEPLAY_AFTER_SPEECH_TIMEOUT_MS = 1200
-const ROLEPLAY_MAX_RECORD_MS = 9000
+const ROLEPLAY_INITIAL_SILENCE_TIMEOUT_MS = 7000
+const ROLEPLAY_AFTER_SPEECH_TIMEOUT_MS = 2600
+const ROLEPLAY_MAX_RECORD_MS = 15000
 /**
  * 결과 화면 등장 순서.
  * 트로피(+소리) → Nice Try → 회색 별 3개 → 보상 별 하나씩(+소리) → 포인트 → 설명 → 버튼
@@ -88,13 +88,13 @@ function recordRoleplaySpeech(durationMs = ROLEPLAY_MAX_RECORD_MS): Promise<{ au
     let interimTranscript = ''
     let settled = false
     let hasSpeech = false
-    let silenceTimer = window.setTimeout(() => finish(), ROLEPLAY_INITIAL_SILENCE_TIMEOUT_MS)
+    let silenceTimer: number | null = null
     const maxRecordTimer = window.setTimeout(() => finish(), durationMs)
 
     const currentTranscript = () => `${finalTranscript} ${interimTranscript}`.trim()
 
     const cleanup = () => {
-      window.clearTimeout(silenceTimer)
+      if (silenceTimer !== null) window.clearTimeout(silenceTimer)
       window.clearTimeout(maxRecordTimer)
       try {
         recognition?.abort()
@@ -107,7 +107,7 @@ function recordRoleplaySpeech(durationMs = ROLEPLAY_MAX_RECORD_MS): Promise<{ au
     const finish = () => {
       if (settled) return
       settled = true
-      window.clearTimeout(silenceTimer)
+      if (silenceTimer !== null) window.clearTimeout(silenceTimer)
       if (mediaRecorder.state !== 'inactive') {
         mediaRecorder.stop()
         return
@@ -119,7 +119,7 @@ function recordRoleplaySpeech(durationMs = ROLEPLAY_MAX_RECORD_MS): Promise<{ au
       const transcript = currentTranscript()
       cleanup()
       resolve({
-        audio: new Blob(chunks, { type: 'audio/webm' }),
+        audio: new Blob(chunks, { type: mediaRecorder.mimeType || 'audio/webm' }),
         transcript,
       })
     }
@@ -132,10 +132,10 @@ function recordRoleplaySpeech(durationMs = ROLEPLAY_MAX_RECORD_MS): Promise<{ au
       reject(new Error('Recording failed.'))
     }
     mediaRecorder.onstop = complete
-    mediaRecorder.start()
+    mediaRecorder.start(250)
 
     const restartSilenceTimer = () => {
-      window.clearTimeout(silenceTimer)
+      if (silenceTimer !== null) window.clearTimeout(silenceTimer)
       silenceTimer = window.setTimeout(
         () => finish(),
         hasSpeech ? ROLEPLAY_AFTER_SPEECH_TIMEOUT_MS : ROLEPLAY_INITIAL_SILENCE_TIMEOUT_MS,
@@ -143,7 +143,6 @@ function recordRoleplaySpeech(durationMs = ROLEPLAY_MAX_RECORD_MS): Promise<{ au
     }
 
     if (!recognition) {
-      restartSilenceTimer()
       return
     }
 
@@ -165,7 +164,10 @@ function recordRoleplaySpeech(durationMs = ROLEPLAY_MAX_RECORD_MS): Promise<{ au
       hasSpeech = hasSpeech || Boolean(currentTranscript())
       restartSilenceTimer()
     }
-    recognition.onerror = () => {
+    recognition.onerror = (event) => {
+      if (event.error === 'not-allowed' || event.error === 'service-not-allowed') {
+        return
+      }
       restartSilenceTimer()
     }
     recognition.onend = () => {
