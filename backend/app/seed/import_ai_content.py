@@ -87,8 +87,13 @@ def page_image_url(
     lesson_number: int,
     page_number: int | None,
 ) -> str | None:
-    if page_number is None or lesson_number not in {1, 2}:
+    if page_number is None or lesson_number < 1 or lesson_number > 10:
         return None
+    if lesson_number > 2:
+        return (
+            f"/images/pages/ipad/lesson{lesson_number:02d}"
+            f"/p{page_number:02d}.webp"
+        )
     level = {
         Difficulty.BEGINNER: 1,
         Difficulty.INTERMEDIATE: 2,
