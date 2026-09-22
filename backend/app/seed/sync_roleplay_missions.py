@@ -98,25 +98,36 @@ async def main() -> None:
                 continue
             lessons = load_json(outputs_dir / item["roleplay_file"])
             story_title = next((lesson.get("story_title") for lesson in lessons if lesson.get("story_title")), None)
-            book_statement = (
-                select(Book)
-                .where(Book.difficulty == item["difficulty"])
-                .order_by(Book.display_order, Book.book_id)
-            )
             if story_title:
-                book_statement = book_statement.where(Book.title == story_title)
-            book_result = await session.execute(book_statement)
-            book = book_result.scalars().first()
+                titled_book_result = await session.execute(
+                    select(Book)
+                    .where(
+                        Book.difficulty == item["difficulty"],
+                        Book.title == story_title,
+                    )
+                    .order_by(Book.display_order, Book.book_id)
+                )
+                book = titled_book_result.scalars().first()
+            else:
+                book = None
+
+            if book is None:
+                book_result = await session.execute(
+                    select(Book)
+                    .where(Book.difficulty == item["difficulty"])
+                    .order_by(Book.display_order, Book.book_id)
+                )
+                book = book_result.scalars().first()
             if book is None:
                 raise RuntimeError(
                     f"No book found for difficulty={item['difficulty'].value}"
-                    + (f" title={story_title!r}" if story_title else "")
                 )
 
             summary = {
                 "difficulty": item["difficulty"].value,
                 "bookId": book.book_id,
                 "bookTitle": book.title,
+                "sourceStoryTitle": story_title,
                 "file": item["roleplay_file"],
                 "updated": 0,
                 "created": 0,
