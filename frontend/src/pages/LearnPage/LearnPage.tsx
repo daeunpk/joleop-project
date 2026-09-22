@@ -220,6 +220,14 @@ function spokenBlankWord(transcript: string, expected?: string | null): string {
   return words.length === 1 ? words[0] : words[words.length - 1]
 }
 
+function roleplayMissionText(roleplay: RoleplayData): string {
+  const title = roleplay.mission.title.trim()
+  const genericTitles = new Set(['self_intro', 'direction', 'escape', 'roleplay'])
+  const body = roleplay.mission.playerGoal ?? roleplay.mission.description
+  if (!title || genericTitles.has(title.toLowerCase())) return body
+  return `${title}\n${body}`
+}
+
 function getReadTokens(text: string): ReadToken[] {
   const matches = text.matchAll(/\S+|\s+/g)
   let wordIndex = -1
@@ -544,7 +552,7 @@ export default function LearnPage() {
   const backendRoleplay: RoleplayMission | undefined = roleplay ? {
     thumbnailColor: '#C4D4B8',
     thumbnailUrl: roleplay.character.imageUrl ?? undefined,
-    mission: roleplay.mission.playerGoal ?? roleplay.mission.description,
+    mission: roleplayMissionText(roleplay),
     missionSummary: roleplay.mission.description,
     turns: Array.from(
       { length: Math.max(3, roleplay.mission.requiredTurns ?? 3) },

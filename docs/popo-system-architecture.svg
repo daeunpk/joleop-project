@@ -58,7 +58,7 @@
   <g transform="translate(340,65)">
     <path d="M5 70 L45 12 L85 70 Z" class="aws-orange"/>
     <text x="105" y="43" class="h1">AWS Amplify</text>
-    <text x="105" y="68" class="txt">React/Vite Frontend</text>
+    <text x="105" y="68" class="txt">Static React/Vite Frontend</text>
     <text x="105" y="91" class="tiny">daeun.d2pvyyx48vb41m.amplifyapp.com</text>
   </g>
 
@@ -105,13 +105,14 @@
     <path d="M39 19 L60 45 M56 51 H24 M21 46 L36 19" fill="none" stroke="#fff" stroke-width="2"/>
   </g>
   <text x="326" y="272" class="h2">Amplify Hosting</text>
-  <text x="327" y="294" class="txt">Frontend + HTTPS</text>
+  <text x="327" y="294" class="txt">Static frontend + HTTPS</text>
 
   <path d="M424 143 V172" class="thin"/>
-  <path d="M431 250 V395" class="line"/>
-  <rect x="450" y="315" width="120" height="52" rx="4" class="label"/>
-  <text x="466" y="337" class="small">HTTPS</text>
-  <text x="466" y="354" class="small">/api/v1/*</text>
+  <path d="M210 126 C270 265 315 465 390 584" class="line"/>
+  <rect x="238" y="340" width="150" height="70" rx="4" class="label"/>
+  <text x="254" y="362" class="small">Browser HTTPS</text>
+  <text x="254" y="381" class="small">VITE_API_BASE_URL</text>
+  <text x="254" y="400" class="small">/api/v1/*</text>
 
   <!-- VPC -->
   <rect x="120" y="345" width="865" height="430" class="vpc"/>
@@ -138,6 +139,7 @@
   <path d="M421 598 L433 570 L446 598 Z" fill="none" stroke="#fff" stroke-width="3"/>
   <text x="475" y="574" class="h2">FastAPI Backend</text>
   <text x="475" y="597" class="txt">port 8000 | Auth, Learning, Review, AI, TTS, STT</text>
+  <text x="475" y="617" class="tiny">ECS Express public HTTPS endpoint</text>
   <path d="M345 584 H390" class="thin"/>
 
   <circle cx="118" cy="555" r="34" class="violet"/>
@@ -217,8 +219,8 @@
   <!-- External services -->
   <g transform="translate(210,915)">
     <rect x="0" y="0" width="610" height="86" rx="6" class="gray-box"/>
-    <text x="24" y="32" class="h2">External AI / Auth Services</text>
-    <text x="24" y="58" class="txt">Kakao OAuth | edge-tts | faster-whisper | Ollama / Llama / Qwen</text>
+    <text x="24" y="32" class="h2">Auth / Backend Runtime Integrations</text>
+    <text x="24" y="58" class="txt">Kakao OAuth API | embedded Ollama | edge-tts | faster-whisper</text>
   </g>
   <path d="M600 623 V915" class="dash"/>
   <circle cx="850" cy="958" r="34" class="magenta"/>
@@ -236,7 +238,7 @@
   <g transform="translate(52,930)">
     <rect x="0" y="0" width="125" height="86" rx="6" fill="#fff" stroke="#ddd"/>
     <text x="16" y="25" class="h2">Legend</text>
-    <text x="16" y="50" class="tiny">1 Frontend/API</text>
+    <text x="16" y="50" class="tiny">1 Static app + API call</text>
     <text x="16" y="68" class="tiny">2 Backend</text>
   </g>
 </svg>

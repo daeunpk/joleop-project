@@ -1,9 +1,12 @@
+from types import SimpleNamespace
+
 import pytest
 
 from ai.roleplay import RoleplaySession, judge_answer, start_roleplay_session
 from app.models import RoleplayMission
+from app.seed.import_ai_content import roleplay_mission_title
 from app.services.evaluation import DescriptionEvaluationService
-from app.services.roleplay import MockRoleplayService, roleplay_runtime_context
+from app.services.roleplay import AIRoleplayService, MockRoleplayService, roleplay_runtime_context
 from shared.models import RoleplayScenario
 
 
@@ -74,6 +77,44 @@ def test_roleplay_context_treats_character_name_as_npc() -> None:
     assert context["child_role"] == "story helper"
     assert "You are a story helper" in context["situation"]
     assert "You are Friendly Hunter" not in context["situation"]
+
+
+def test_roleplay_context_prefers_chapter_context_over_generic_scene() -> None:
+    mission = RoleplayMission(
+        mission_id=3,
+        book_id=1,
+        title="Leave safely",
+        description=(
+            "You notice a safe side door while music fills the ballroom. "
+            "Story context: Popo stood proudly in Sunflower Meadow, looking at their newly built birdhouse."
+        ),
+        character_name="Popo",
+        opening_message="",
+        player_goal="Talk about the new birdhouse with Popo.",
+        model_answer="The birdhouse looks wonderful!",
+        similar_answers=[],
+        hint_sequence=[],
+        required_turns=3,
+    )
+
+    context = roleplay_runtime_context(mission)
+
+    assert "newly built birdhouse" in context["situation"]
+    assert "ballroom" not in context["situation"].lower()
+
+
+def test_roleplay_import_title_uses_story_goal_instead_of_generic_topic() -> None:
+    title = roleplay_mission_title(
+        {
+            "topic": "self_intro",
+            "player_goal": "Ask Popo if you can help him untangle his mane.",
+            "scene_description": "Popo's mane is tangled with thorns.",
+        },
+        lesson=3,
+        index=1,
+    )
+
+    assert title == "Ask Popo if you can help him untangle his mane"
 
 
 def test_roleplay_judge_rejects_too_short_unrelated_response() -> None:
@@ -168,4 +209,40 @@ async def test_roleplay_returns_hint_for_unrelated_answer() -> None:
     )
 
     assert result["score"] < 70
+    assert result["text"] == "Say you can help."
+
+
+@pytest.mark.asyncio
+async def test_ai_roleplay_falls_back_when_llm_returns_empty_text(monkeypatch: pytest.MonkeyPatch) -> None:
+    mission = RoleplayMission(
+        mission_id=1,
+        book_id=1,
+        title="Help Hana",
+        description="Encourage Hana.",
+        character_name="Hana",
+        opening_message="Can you help me?",
+        model_answer="I can help!",
+        similar_answers=[],
+        hint_sequence=["Say you can help."],
+        required_turns=1,
+    )
+    service = AIRoleplayService(session=SimpleNamespace())
+
+    async def restore_session(*, mission, session_id, history=None):
+        return SimpleNamespace(goal_achieved=False, completed=False)
+
+    monkeypatch.setattr(service, "_restore_session", restore_session)
+    monkeypatch.setattr(
+        "app.services.roleplay.process_roleplay_text_turn",
+        lambda session, transcript: SimpleNamespace(ai_response=" ", hint_given=False),
+    )
+
+    result = await service.respond(
+        mission=mission,
+        session_id=10,
+        transcript="I want pizza.",
+        turn=1,
+    )
+
+    assert result["source"] == "fallback"
     assert result["text"] == "Say you can help."

@@ -89,9 +89,11 @@ def _child_facing_situation(
     clean_scene = _clean_scene_description(scene_description)
     lowered = f"{player_goal} {model_answer} {clean_scene}".lower()
     if "stuck behind" in lowered and "chair" in lowered:
-        return f"You are a {child_role}. Someone is stuck behind a chair. Ask {ai_character} for help."
+        scene = clean_scene or "Someone is stuck behind a chair."
+        return f"You are a {child_role}. {scene} Ask {ai_character} for help."
     if "safe side door" in lowered or "side door" in lowered:
-        return "You are with your story friend in a crowded ballroom. You see a safe side door. Tell your friend how to leave safely."
+        scene = clean_scene or "You see a safe side door in the story scene."
+        return f"You are a {child_role}. {scene} Tell your friend how to leave safely."
     if clean_scene:
         if player_goal and player_goal.strip().lower().startswith(("ask ", "tell ", "say ", "help ")):
             return f"You are a {child_role}. {clean_scene} {player_goal.strip()}"
@@ -102,8 +104,27 @@ def _child_facing_situation(
 
 
 def _clean_scene_description(scene_description: str) -> str:
-    scene = re.sub(r"\s*Story context:\s*.*$", "", scene_description.strip(), flags=re.I)
+    raw_scene = re.sub(r"\s+", " ", scene_description.strip())
+    parts = re.split(r"\s*Story context:\s*", raw_scene, maxsplit=1, flags=re.I)
+    if len(parts) == 2:
+        scene, story_context = (part.strip() for part in parts)
+        if _is_generic_roleplay_scene(scene):
+            return story_context
+        scene = f"{scene} In this chapter, {story_context}"
+    else:
+        scene = raw_scene
     return re.sub(r"\s+", " ", scene).strip()
+
+
+def _is_generic_roleplay_scene(scene: str) -> bool:
+    lowered = scene.lower()
+    generic_markers = (
+        "safe side door",
+        "music fills the ballroom",
+        "leaving the ballroom",
+        "crowded ballroom",
+    )
+    return any(marker in lowered for marker in generic_markers)
 
 
 def _closing_response(text: str, *, fallback: str) -> str:
@@ -174,6 +195,21 @@ class AIRoleplayService(RoleplayService):
                 session_id,
                 turn,
                 exc,
+            )
+            return await MockRoleplayService().respond(
+                mission=mission,
+                session_id=session_id,
+                transcript=transcript,
+                turn=turn,
+            )
+
+        if not result.ai_response.strip():
+            logger.warning(
+                "Roleplay LLM returned an empty response; using fallback response. "
+                "mission_id=%s session_id=%s turn=%s",
+                mission.mission_id,
+                session_id,
+                turn,
             )
             return await MockRoleplayService().respond(
                 mission=mission,

@@ -2,6 +2,7 @@ import argparse
 import asyncio
 import json
 from pathlib import Path
+import re
 from typing import Any
 
 from sqlalchemy import delete, func, select
@@ -79,6 +80,62 @@ def blank_text_to_sentence(value: str | None) -> str | None:
             break
         sentence = f"{sentence[:start]}____{sentence[end + 1:]}"
     return sentence
+
+
+GENERIC_ROLEPLAY_TOPICS = {
+    "self_intro",
+    "direction",
+    "escape",
+    "roleplay",
+}
+
+
+def roleplay_mission_title(scenario: dict[str, Any], *, lesson: int, index: int) -> str:
+    explicit = str(
+        scenario.get("title")
+        or scenario.get("mission_title")
+        or scenario.get("name")
+        or ""
+    ).strip()
+    if explicit:
+        return explicit
+
+    topic = str(scenario.get("topic") or "").strip()
+    if topic and topic.lower() not in GENERIC_ROLEPLAY_TOPICS:
+        return _title_from_text(topic.replace("_", " "))
+
+    source = str(
+        scenario.get("player_goal")
+        or scenario.get("mission_goal")
+        or scenario.get("scene_description")
+        or ""
+    ).strip()
+    title = _title_from_text(source)
+    return title or f"Chapter {lesson} Roleplay {index}"
+
+
+def _title_from_text(text: str) -> str:
+    cleaned = re.sub(r"\s+", " ", text).strip(" .")
+    cleaned = re.sub(
+        r"^(?:the child should|encourage the child to|the child|you should)\s+",
+        "",
+        cleaned,
+        flags=re.I,
+    )
+    cleaned = re.sub(r"^offer to\s+", "", cleaned, flags=re.I)
+    if not cleaned:
+        return ""
+    words = cleaned.split()
+    shortened = []
+    length = 0
+    for word in words:
+        next_length = length + len(word) + (1 if shortened else 0)
+        if next_length > 72:
+            break
+        shortened.append(word)
+        length = next_length
+    title = " ".join(shortened) or cleaned[:72].rstrip()
+    return title[:1].upper() + title[1:]
 
 
 def page_image_url(
@@ -277,7 +334,11 @@ async def replace_book_content(
                 character_name="Friend",
                 opening_message="",
             )
-            mission.title = scenario.get("topic") or f"Roleplay {current_lesson}-{index}"
+            mission.title = roleplay_mission_title(
+                scenario,
+                lesson=current_lesson,
+                index=index,
+            )
             mission.description = scenario.get("scene_description") or lesson.get("theme") or ""
             mission.character_name = scenario.get("character_name") or "Friend"
             mission.character_image_url = scenario.get("character_image_url")
