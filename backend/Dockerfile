@@ -24,7 +24,10 @@ RUN pip install --no-cache-dir --upgrade pip \
 COPY backend /app/backend
 COPY ai /app/ai
 COPY shared /app/shared
-COPY outputs/run_20260903_114105_819434 /app/outputs/run_20260903_114105_819434
+RUN mkdir -p /app/outputs/run_20260903_114105_819434
+COPY outputs/run_20260903_114105_819434/qwen_judged_lessons_accepted_text_roleplays.json /app/outputs/run_20260903_114105_819434/
+COPY outputs/run_20260903_114105_819434/qwen_judged_lessons_level2_accepted_text_roleplays.json /app/outputs/run_20260903_114105_819434/
+COPY outputs/run_20260903_114105_819434/qwen_judged_lessons_level3_accepted_text_roleplays.json /app/outputs/run_20260903_114105_819434/
 RUN chmod +x /app/backend/start.sh
 
 WORKDIR /app/backend
