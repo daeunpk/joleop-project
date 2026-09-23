@@ -215,6 +215,7 @@ export default function RoleplayScreen({
   const [userAnswers, setUserAnswers] = useState<string[]>(() => initialUserAnswers(roleplay))
   const [npcReplies, setNpcReplies] = useState<string[]>(() => initialNpcReplies(roleplay))
   const [recordState, setRecordState] = useState<RecordState>('idle')
+  const [serverCompleted, setServerCompleted] = useState(false)
   const [showFinalNpc, setShowFinalNpc] = useState(false)
   const [showCompletion, setShowCompletion] = useState(false)
   const [revealStage, setRevealStage] = useState(REVEAL_TROPHY)
@@ -238,6 +239,7 @@ export default function RoleplayScreen({
     setUserAnswers(initialUserAnswers(roleplay))
     setNpcReplies(initialNpcReplies(roleplay))
     setRecordState('idle')
+    setServerCompleted(false)
     setShowFinalNpc(Boolean(roleplay.history?.length && roleplay.history.length >= roleplay.turns.length))
     setShowCompletion(false)
     setRevealStage(REVEAL_TROPHY)
@@ -259,7 +261,7 @@ export default function RoleplayScreen({
     chatBottomRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [userAnswers])
 
-  const isDone = userAnswers.length >= roleplay.turns.length
+  const isDone = serverCompleted || userAnswers.length >= roleplay.turns.length
 
   const handleRecord = async () => {
     if (recordState !== 'idle' || isDone) return
@@ -287,7 +289,10 @@ export default function RoleplayScreen({
         return next
       })
       void onSpeakText?.(result.characterText)
-      if (currentIdx + 1 >= roleplay.turns.length) {
+      if (result.missionCompleted) {
+        setServerCompleted(true)
+      }
+      if (result.missionCompleted || currentIdx + 1 >= roleplay.turns.length) {
         setShowFinalNpc(true)
       }
       setRecordState('idle')

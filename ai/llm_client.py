@@ -123,10 +123,23 @@ def _generate_with_groq(
     if not GROQ_API_KEY:
         raise RuntimeError("GROQ_API_KEY is required when LLM_PROVIDER=groq.")
 
+    selected_model = model or GROQ_MODEL
     groq_messages = []
     if system:
         groq_messages.append({"role": "system", "content": system})
     groq_messages.extend(messages)
+
+    payload = {
+        "model": selected_model,
+        "messages": groq_messages,
+        "max_completion_tokens": max_tokens,
+        "temperature": temperature,
+    }
+    if selected_model.startswith("openai/gpt-oss-"):
+        payload.update({
+            "reasoning_effort": "low",
+            "include_reasoning": False,
+        })
 
     resp = requests.post(
         f"{GROQ_BASE_URL.rstrip('/')}/chat/completions",
@@ -134,13 +147,9 @@ def _generate_with_groq(
             "Authorization": f"Bearer {GROQ_API_KEY}",
             "Content-Type": "application/json",
         },
-        json={
-            "model": model or GROQ_MODEL,
-            "messages": groq_messages,
-            "max_tokens": max_tokens,
-            "temperature": temperature,
-        },
+        json=payload,
         timeout=GROQ_TIMEOUT_SECONDS,
     )
     resp.raise_for_status()
-    return resp.json()["choices"][0]["message"]["content"].strip()
+    content = resp.json()["choices"][0]["message"].get("content") or ""
+    return content.strip()

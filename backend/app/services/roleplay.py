@@ -34,8 +34,18 @@ def roleplay_runtime_context(mission: RoleplayMission) -> dict:
     model_answer = mission.model_answer or ""
     addressed_name = _addressed_character(model_answer)
     ai_character = addressed_name or mission.character_name or "your story friend"
-    player_goal = mission.player_goal or mission.description
+    player_goal = _child_facing_goal(
+        mission.player_goal or "",
+        model_answer=model_answer,
+        scene_description=mission.description or "",
+        ai_character=ai_character,
+    ) or mission.description
     opening_message = mission.opening_message or ""
+    opening_message = _child_facing_opening(
+        opening_message,
+        model_answer=model_answer,
+        scene_description=mission.description or "",
+    )
     situation = _child_facing_situation(
         child_role=child_role,
         ai_character=ai_character,
@@ -66,6 +76,45 @@ def clean_roleplay_transcript(mission: RoleplayMission, transcript: str) -> str:
     cleaned = re.sub(r"^\s*(purple|people|polo|papa|po po)\b", "Popo", cleaned, flags=re.I)
     cleaned = re.sub(r"\bpurple\b(?=[,.!?]?\s+(i|i'm|im|can|please|help)\b)", "Popo", cleaned, flags=re.I)
     return cleaned
+
+
+def _child_facing_goal(
+    player_goal: str,
+    *,
+    model_answer: str,
+    scene_description: str,
+    ai_character: str,
+) -> str:
+    goal = re.sub(r"\s+", " ", player_goal.strip())
+    lowered = f"{goal} {model_answer} {scene_description}".lower()
+    if "trapped bird" in lowered or "little bird" in lowered or "baby bird" in lowered:
+        return "Tell Popo you want to help the little bird."
+    if "stuck behind" in lowered and "chair" in lowered:
+        return f"Ask {ai_character} for help because you are stuck behind the chair."
+    if "direction" in lowered or "find my friends" in lowered or "find their way" in lowered:
+        return "Ask where your friends are."
+    if "safe side door" in lowered or "side door" in lowered:
+        return "Tell your friend to use the safe side door."
+    if goal.lower().startswith(("encourage the child", "ask the child", "have the child")):
+        if model_answer:
+            return f'Say: "{model_answer}"'
+        return ""
+    return goal
+
+
+def _child_facing_opening(
+    opening_message: str,
+    *,
+    model_answer: str,
+    scene_description: str,
+) -> str:
+    opening = re.sub(r"\s+", " ", opening_message.strip())
+    lowered = f"{opening} {model_answer} {scene_description}".lower()
+    if ("trapped bird" in lowered or "little bird" in lowered or "baby bird" in lowered) and (
+        not opening or "chirp" in lowered or "chirping" in lowered
+    ):
+        return "I hear a tiny chirp near the bush. Will you help me check on the little bird?"
+    return opening
 
 
 def _addressed_character(text: str) -> str | None:

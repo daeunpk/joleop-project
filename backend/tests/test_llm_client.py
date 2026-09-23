@@ -39,4 +39,8 @@ def test_groq_provider_uses_openai_compatible_chat_completion(monkeypatch) -> No
     assert captured["headers"]["Authorization"] == "Bearer test-key"
     assert captured["json"]["model"] == "openai/gpt-oss-20b"
     assert captured["json"]["messages"][0] == {"role": "system", "content": "Be brief."}
+    assert captured["json"]["max_completion_tokens"] == 32
+    assert "max_tokens" not in captured["json"]
+    assert captured["json"]["reasoning_effort"] == "low"
+    assert captured["json"]["include_reasoning"] is False
     assert captured["timeout"] == 10

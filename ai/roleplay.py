@@ -117,7 +117,8 @@ def get_character_response(
     response = generate_text(
         messages_to_send,
         system=session.system_prompt,
-        max_tokens=60,
+        # GPT-OSS completion limits include its internal reasoning budget.
+        max_tokens=256,
     )
     response = _clean_character_response(response, session.scenario.character_name)
     session.conversation_history.append({"role": "assistant", "content": response})

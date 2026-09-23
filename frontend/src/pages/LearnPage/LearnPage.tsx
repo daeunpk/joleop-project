@@ -673,9 +673,11 @@ export default function LearnPage() {
   // Auto-play audio when the reading or speaking page changes.
   useEffect(() => {
     if ((phase === 'reading' || phase === 'repeat') && currentPage?.audioUrl) {
-      playAudioWithHighlights(currentPage.audioUrl, currentPage.text)
+      void playAudioWithHighlights(currentPage.audioUrl, currentPage.text).catch(() => {
+        speakWithBrowserVoice()
+      })
     } else if ((phase === 'reading' || phase === 'repeat') && currentPage?.text) {
-      speakCurrentPage()
+      void speakCurrentPage()
     }
     return () => {
       stopAudio()
@@ -897,6 +899,27 @@ export default function LearnPage() {
       audio,
       transcript,
     )
+    setRoleplay((current) => {
+      if (!current || current.mission.missionId !== roleplay.mission.missionId) return current
+      const nextMessage = {
+        messageId: result.messageId,
+        turn: result.turn,
+        user: { transcript: result.user.transcript },
+        character: {
+          speaker: result.character.speaker,
+          text: result.character.text,
+        },
+        score: result.score,
+        missionCompleted: result.missionCompleted,
+      }
+      const messages = current.messages?.filter((message) => message.messageId !== result.messageId) ?? []
+      return {
+        ...current,
+        courseProgress: result.courseProgress,
+        totalProgress: result.totalProgress,
+        messages: [...messages, nextMessage],
+      }
+    })
     setRoleplayProgress(0.70 + (result.courseProgress / 100) * 0.30)
     setRoleplayScores((scores) => [...scores, result.score])
     return {

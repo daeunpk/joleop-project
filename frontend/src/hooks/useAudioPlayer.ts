@@ -38,7 +38,7 @@ export function useAudioPlayer() {
       options.onError?.()
     }
     audioRef.current = audio
-    return audio.play().catch(() => {})
+    return audio.play()
   }, [stopFrame])
 
   const stop = useCallback(() => {
