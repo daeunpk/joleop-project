@@ -254,16 +254,13 @@ async def create_roleplay_message(
     speech_to_text_service: SpeechToTextService = Depends(get_speech_to_text_service),
 ) -> dict:
     submitted_transcript = transcript if isinstance(transcript, str) else None
-    transcript = (
-        submitted_transcript.strip()
-        if submitted_transcript and submitted_transcript.strip()
-        else await speech_to_text_service.transcribe(audio)
-    )
-    if not transcript.strip():
-        raise AudioValidationException(
-            code="SPEECH_NOT_RECOGNIZED",
-            detail="음성을 인식하지 못했습니다. 다시 말해 주세요.",
-        )
+    if submitted_transcript and submitted_transcript.strip():
+        transcript = submitted_transcript.strip()
+    else:
+        try:
+            transcript = await speech_to_text_service.transcribe(audio)
+        except Exception:
+            transcript = ""
     return success_response(
         await learning_session_service.create_roleplay_message(
             profile=current_profile,

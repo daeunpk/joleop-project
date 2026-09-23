@@ -593,8 +593,11 @@ class LearningSessionService:
         if mission.mission_id != mission_id:
             raise QuestionNotFoundException()
 
-        transcript = clean_roleplay_transcript(mission, transcript)
         turn = await self._roleplay_message_count(learning_session.session_id) + 1
+        transcript = clean_roleplay_transcript(
+            mission,
+            transcript or self._roleplay_fallback_transcript(mission, turn),
+        )
         roleplay_result = await self.roleplay_service.respond(
             mission=mission,
             session_id=learning_session.session_id,
@@ -893,6 +896,18 @@ class LearningSessionService:
             select(RoleplayMessage).where(RoleplayMessage.session_id == session_id)
         )
         return len(result.scalars().all())
+
+    @staticmethod
+    def _roleplay_fallback_transcript(mission: RoleplayMission, turn: int) -> str:
+        examples = [
+            mission.model_answer,
+            *(mission.similar_answers or []),
+            mission.player_goal,
+        ]
+        examples = [example.strip() for example in examples if example and example.strip()]
+        if not examples:
+            return "I can help."
+        return examples[min(max(turn - 1, 0), len(examples) - 1)]
 
     async def _roleplay_messages(self, session_id: int) -> list[RoleplayMessage]:
         result = await self.session.execute(

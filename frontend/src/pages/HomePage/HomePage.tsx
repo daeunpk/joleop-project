@@ -29,7 +29,7 @@ function readPopoCustomization(): PopoCustomization {
 
 export default function HomePage() {
   const navigate = useNavigate()
-  const { selectedBook, userStats, selectBook } = useAppStore()
+  const { selectedBook, userStats } = useAppStore()
   const [selectedThemeId, setSelectedThemeId] = useState(readSelectedThemeId)
   const [popoCustomization, setPopoCustomization] = useState(readPopoCustomization)
 
@@ -40,7 +40,6 @@ export default function HomePage() {
     }
     fetchHome()
       .then((home) => {
-        if (home.currentBook && !selectedBook) selectBook(home.currentBook)
         useAppStore.setState({ userStats: home.stats })
         if (home.customization) {
           setSelectedThemeId(home.customization.selectedThemeId)
@@ -55,7 +54,7 @@ export default function HomePage() {
         }
         console.warn('Could not load DB home data.', err)
       })
-  }, [navigate, selectBook, selectedBook])
+  }, [navigate])
 
   useEffect(() => {
     const syncSelectedTheme = () => setSelectedThemeId(readSelectedThemeId())

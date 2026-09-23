@@ -141,6 +141,7 @@ function recordRoleplaySpeech(durationMs = ROLEPLAY_MAX_RECORD_MS): Promise<{ au
         hasSpeech ? ROLEPLAY_AFTER_SPEECH_TIMEOUT_MS : ROLEPLAY_INITIAL_SILENCE_TIMEOUT_MS,
       )
     }
+    restartSilenceTimer()
 
     if (!recognition) {
       return
@@ -166,6 +167,7 @@ function recordRoleplaySpeech(durationMs = ROLEPLAY_MAX_RECORD_MS): Promise<{ au
     }
     recognition.onerror = (event) => {
       if (event.error === 'not-allowed' || event.error === 'service-not-allowed') {
+        restartSilenceTimer()
         return
       }
       restartSilenceTimer()
@@ -271,12 +273,7 @@ export default function RoleplayScreen({
     try {
       const { audio: blob, transcript } = await recordRoleplaySpeech()
       const cleanTranscript = transcript.trim()
-      if (!cleanTranscript) {
-        setSpeechError('Could not hear that. Please try again.')
-        setRecordState('idle')
-        return
-      }
-      const result = await onRecord(blob, cleanTranscript)
+      const result = await onRecord(blob, cleanTranscript || undefined)
       if (!result.userTranscript.trim()) {
         setSpeechError('Could not hear that. Please try again.')
         setRecordState('idle')
