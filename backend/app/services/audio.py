@@ -5,8 +5,11 @@ from app.core.exceptions import AudioValidationException
 
 
 ALLOWED_AUDIO_MIME_TYPES = {
+    "audio/aac",
+    "audio/ogg",
     "audio/wav",
     "audio/x-wav",
+    "audio/x-m4a",
     "audio/mpeg",
     "audio/mp4",
     "audio/webm",
@@ -15,7 +18,8 @@ ALLOWED_AUDIO_MIME_TYPES = {
 
 class AudioValidationService:
     async def read_validated_audio(self, audio: UploadFile) -> bytes:
-        if audio.content_type not in ALLOWED_AUDIO_MIME_TYPES:
+        content_type = (audio.content_type or "").split(";", 1)[0].strip().lower()
+        if content_type not in ALLOWED_AUDIO_MIME_TYPES:
             raise AudioValidationException(
                 code="INVALID_AUDIO_MIME_TYPE",
                 detail="지원하지 않는 오디오 형식입니다.",

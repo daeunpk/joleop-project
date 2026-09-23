@@ -559,6 +559,20 @@ async def test_invalid_mime(course_context) -> None:
 
 
 @pytest.mark.asyncio
+async def test_audio_mime_with_codec_parameter(course_context) -> None:
+    response = await create_repeat_attempt(
+        128,
+        audio=upload_file(content_type="audio/webm;codecs=opus"),
+        question_id=201,
+        current_profile=course_context["profile"],
+        learning_session_service=course_context["service"],
+        speech_to_text_service=course_context["speech"],
+    )
+
+    assert response["data"]["transcript"] == "She is reading a book."
+
+
+@pytest.mark.asyncio
 async def test_empty_audio(course_context) -> None:
     with pytest.raises(AudioValidationException) as exc:
         await create_repeat_attempt(
