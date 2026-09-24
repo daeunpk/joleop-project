@@ -110,10 +110,26 @@ def _child_facing_opening(
 ) -> str:
     opening = re.sub(r"\s+", " ", opening_message.strip())
     lowered = f"{opening} {model_answer} {scene_description}".lower()
+    generic_opening = opening.lower() in {
+        "",
+        "hi! what should we do?",
+        "hi! what can i help you with?",
+        "hi, what should we do?",
+    }
     if ("trapped bird" in lowered or "little bird" in lowered or "baby bird" in lowered) and (
-        not opening or "chirp" in lowered or "chirping" in lowered
+        generic_opening or "chirp" in lowered or "chirping" in lowered
     ):
         return "I hear a tiny chirp near the bush. Will you help me check on the little bird?"
+    if "stuck behind" in lowered and "chair" in lowered:
+        return "I hear you behind the big chair. Are you stuck?"
+    if generic_opening and (
+        "direction" in lowered
+        or "find my friend" in lowered
+        or "find their way" in lowered
+        or "friends need" in lowered
+        or "friends are lost" in lowered
+    ):
+        return "Hello, little helper. Who are you looking for?"
     return opening
 
 
@@ -399,6 +415,13 @@ class MockRoleplayService(RoleplayService):
         context = roleplay_runtime_context(mission)
         child_role = context["child_role"]
         lowered = f"{context['situation']} {mission.model_answer or ''}".lower()
+
+        if "trapped bird" in lowered or "little bird" in lowered or "baby bird" in lowered:
+            if turn <= 1:
+                return "Yes, let's help the little bird together."
+            if turn == 2:
+                return "Good idea. Let's look near the bush and move slowly."
+            return "Wonderful. We were gentle, and the little bird is safe now!"
 
         if "stuck behind" in lowered and "chair" in lowered:
             if turn <= 1:
